@@ -324,18 +324,19 @@
 }
 
 .panelHeader {
-  margin-bottom: var(--space-1);
+  margin-bottom: var(--space-2);
 }
 
 .panelTitleRow {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
 
 .panelHeaderIcon {
   color: var(--primary-400);
+  filter: drop-shadow(0 2px 6px rgba(102, 65, 255, 0.35));
 }
 
 .panelTitle {
@@ -346,30 +347,74 @@
   margin: 0;
 }
 
+:global([data-theme="light"]) .panelTitle {
+  color: #0d091e;
+  font-weight: 800;
+}
+
 .panelSubtitle {
   font-size: 11px;
   color: var(--text-tertiary);
   margin: 0;
 }
 
-/* Cycle Configuration Groups */
+:global([data-theme="light"]) .panelSubtitle {
+  color: #4b3e6e;
+  font-weight: 500;
+}
+
+/* Cycle Configuration Groups — Liquid Glass Cards with Depth */
 .configGroup {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--glass-border);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 100%), rgba(20, 15, 36, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: var(--radius-xl);
-  padding: var(--space-3) var(--space-4);
+  padding: 14px var(--space-4);
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  box-shadow: var(--glass-bevel);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  transition: all var(--transition-fast);
+  box-shadow: inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.22), 0 8px 24px -4px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+
+.configGroup::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.35) 50%, transparent 100%);
+  pointer-events: none;
 }
 
 .configGroup:hover {
-  border-color: var(--glass-border-light);
-  background: rgba(255, 255, 255, 0.045);
+  border-color: rgba(255, 255, 255, 0.28);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.03) 100%), rgba(28, 22, 48, 0.65);
+  box-shadow: inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.35), 0 12px 30px -4px rgba(0, 0, 0, 0.45);
+  transform: translateY(-1px);
+}
+
+:global([data-theme="light"]) .configGroup {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 246, 255, 0.85) 100%);
+  border: 1px solid rgba(124, 77, 255, 0.20);
+  box-shadow: inset 0 1.5px 1px 0 #ffffff, 0 6px 20px -3px rgba(102, 65, 255, 0.12), 0 2px 6px rgba(0, 0, 0, 0.03);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+:global([data-theme="light"]) .configGroup::before {
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.95) 50%, transparent 100%);
+}
+
+:global([data-theme="light"]) .configGroup:hover {
+  background: linear-gradient(135deg, #ffffff 0%, rgba(244, 241, 255, 0.95) 100%);
+  border-color: rgba(102, 65, 255, 0.38);
+  box-shadow: inset 0 1.5px 1px 0 #ffffff, 0 12px 28px -3px rgba(102, 65, 255, 0.18);
+  transform: translateY(-1px);
 }
 
 .configGroupHeader {
@@ -382,18 +427,23 @@
 .configLabelRow {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
 }
 
 .configLabel {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  letter-spacing: 0.01em;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+:global([data-theme="light"]) .configLabel {
+  color: #1a1334;
+  font-weight: 700;
 }
 
 .configIconFocus {
-  color: #6641ff;
+  color: #8868ff;
 }
 
 .configIconShortBreak {
@@ -401,111 +451,193 @@
 }
 
 .configIconLongBreak {
-  color: #8868ff;
+  color: #a78bfa;
 }
 
 .configIconCycles {
   color: #38bdf8;
 }
 
-/* Stepper Component (+ / - / value) */
+:global([data-theme="light"]) .configIconFocus {
+  color: #5528e0;
+}
+
+:global([data-theme="light"]) .configIconShortBreak {
+  color: #059669;
+}
+
+:global([data-theme="light"]) .configIconLongBreak {
+  color: #6d42e0;
+}
+
+:global([data-theme="light"]) .configIconCycles {
+  color: #0284c7;
+}
+
+/* Stepper Component (+ / - / value) — Liquid Glass Pill with Bevel */
 .stepperBox {
   display: inline-flex;
   align-items: center;
-  background: var(--bg-input);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  padding: 2px;
-  gap: 2px;
+  background: rgba(14, 10, 26, 0.70);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: var(--radius-full);
+  padding: 3px 4px;
+  gap: 4px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.40), 0 2px 6px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all var(--transition-fast);
+}
+
+:global([data-theme="light"]) .stepperBox {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(102, 65, 255, 0.26);
+  box-shadow: inset 0 1px 1px #ffffff, 0 3px 10px rgba(102, 65, 255, 0.10);
 }
 
 .stepperBtn {
   width: 26px;
   height: 26px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
 .stepperBtn:hover:not(:disabled) {
-  background: var(--glass-surface-hover);
-  color: var(--text-primary);
+  background: rgba(124, 77, 255, 0.30);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(102, 65, 255, 0.40);
+  transform: scale(1.06);
+}
+
+.stepperBtn:active:not(:disabled) {
+  transform: scale(0.94);
 }
 
 .stepperBtn:disabled {
-  opacity: 0.35;
+  opacity: 0.30;
   cursor: not-allowed;
 }
 
+:global([data-theme="light"]) .stepperBtn {
+  background: rgba(102, 65, 255, 0.08);
+  border: 1px solid rgba(102, 65, 255, 0.15);
+  color: #4322c9;
+}
+
+:global([data-theme="light"]) .stepperBtn:hover:not(:disabled) {
+  background: rgba(102, 65, 255, 0.18);
+  border-color: rgba(102, 65, 255, 0.35);
+  color: #2e129e;
+  box-shadow: 0 0 10px rgba(102, 65, 255, 0.25);
+}
+
 .stepperValueDisplay {
-  min-width: 52px;
+  min-width: 54px;
   text-align: center;
   display: flex;
   align-items: baseline;
   justify-content: center;
-  gap: 2px;
+  gap: 3px;
   font-weight: 700;
   user-select: none;
+  padding: 0 2px;
 }
 
 .stepperNum {
   font-size: 14px;
-  color: var(--text-primary);
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+:global([data-theme="light"]) .stepperNum {
+  color: #0c081e;
+  font-weight: 800;
 }
 
 .stepperUnit {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text-tertiary);
-  font-weight: 500;
+  font-weight: 600;
 }
 
-/* Preset Chips Row */
+:global([data-theme="light"]) .stepperUnit {
+  color: #554877;
+  font-weight: 600;
+}
+
+/* Preset Chips Row — Frosted Liquid Glass Pills */
 .presetChipsRow {
   display: flex;
-  gap: 6px;
+  gap: 7px;
   flex-wrap: wrap;
 }
 
 .presetChip {
-  padding: 3px 10px;
+  padding: 4px 12px;
   border-radius: var(--radius-full);
   font-size: 11px;
   font-weight: 600;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   color: var(--text-secondary);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 2px 6px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
 .presetChip:hover:not(:disabled) {
-  border-color: var(--primary-500);
-  color: var(--text-primary);
-  background: rgba(102, 65, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+  background: rgba(102, 65, 255, 0.25);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 3px 12px rgba(102, 65, 255, 0.40);
+  transform: translateY(-1px);
 }
 
 .presetChip:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: not-allowed;
 }
 
+:global([data-theme="light"]) .presetChip {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(102, 65, 255, 0.20);
+  color: #2e2053;
+  box-shadow: inset 0 1px 0 #ffffff, 0 2px 6px rgba(102, 65, 255, 0.08);
+}
+
+:global([data-theme="light"]) .presetChip:hover:not(:disabled) {
+  background: rgba(243, 239, 255, 0.98);
+  border-color: var(--primary-500);
+  color: var(--primary-700);
+  box-shadow: inset 0 1px 0 #ffffff, 0 4px 12px rgba(102, 65, 255, 0.22);
+  transform: translateY(-1px);
+}
+
 .presetChipActive {
-  background: var(--glass-surface-active);
-  color: #ffffff;
-  border-color: var(--glass-border-light);
-  box-shadow: 0 2px 8px rgba(102, 65, 255, 0.25);
+  background: linear-gradient(135deg, rgba(124, 77, 255, 0.95) 0%, rgba(102, 65, 255, 0.90) 100%);
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.45);
+  box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.55), 0 4px 16px rgba(102, 65, 255, 0.50);
+  font-weight: 700;
 }
 
 :global([data-theme="light"]) .presetChipActive {
-  background: rgba(102, 65, 255, 0.15);
-  color: var(--primary-600);
-  border-color: rgba(102, 65, 255, 0.35);
+  background: linear-gradient(135deg, #7c4dff 0%, #582ee0 100%);
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.65);
+  box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.65), 0 4px 14px rgba(102, 65, 255, 0.42);
+  font-weight: 700;
 }
 
 /* Finish Timer Inline Popup — positioned above the finish button */

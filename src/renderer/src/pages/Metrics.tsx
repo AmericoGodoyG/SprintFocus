@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Clock, TrendingUp, TrendingDown, Mountain, Compass,
-  Calendar as CalendarIcon, Sparkles, Timer
+  Calendar as CalendarIcon, Timer
 } from 'lucide-react'
 import { initBrowserApiFallback } from '../api/browserFallback'
 import styles from './Metrics.module.css'
@@ -294,37 +294,27 @@ function Metrics() {
     }
   }, [dailyData])
 
-  // Automated discrete insights based purely on Pomodoro study time
-  const automatedInsight = useMemo(() => {
-    if (dailyData.length === 0) return null
+  // SVG container measurement for responsive, crystal-clear 1:1 vector resolution
+  const svgWrapperRef = useRef<HTMLDivElement>(null)
+  const [containerWidth, setContainerWidth] = useState(1000)
 
-    // 1. Comparison of this week vs last week
-    if (weekMinutes > 0 && prevWeekMinutes > 0) {
-      const diffPercent = Math.round(((weekMinutes - prevWeekMinutes) / prevWeekMinutes) * 100)
-      if (diffPercent > 0) {
-        return `Você estudou ${diffPercent}% mais tempo nesta semana do que na semana anterior.`
-      } else if (diffPercent < 0) {
-        return `Nesta semana você estudou ${Math.abs(diffPercent)}% menos tempo que na anterior. Conclua novos ciclos no Pomodoro para subir a trilha.`
+  useEffect(() => {
+    if (!svgWrapperRef.current) return
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.contentRect.width > 0) {
+          setContainerWidth(Math.round(entry.contentRect.width))
+        }
       }
-    }
+    })
+    ro.observe(svgWrapperRef.current)
+    return () => ro.disconnect()
+  }, [])
 
-    // 2. Summit point highlight
-    if (stats.summitPoint && stats.summitPoint.minutes > 0) {
-      return `Seu maior tempo de estudo no período foi ${stats.summitPoint.hoursFormatted} em ${stats.summitPoint.fullDate}.`
-    }
-
-    // 3. Average daily time
-    if (stats.averageMinutes > 0) {
-      return `Sua média diária de estudo é de ${formatMinutesToHours(stats.averageMinutes)} no período de ${period === '7d' ? '7 dias' : period === '30d' ? '30 dias' : period === '90d' ? '90 dias' : '1 ano'}.`
-    }
-
-    return 'Inicie sessões no Pomodoro para registrar automaticamente o tempo e ver sua montanha evoluir.'
-  }, [dailyData, weekMinutes, prevWeekMinutes, stats, period])
-
-  // Chart Dimensions and Vector Calculations
-  const chartWidth = 920
-  const chartHeight = 360
-  const padding = { top: 40, right: 45, bottom: 50, left: 55 }
+  // Chart Dimensions and Vector Calculations - enhanced height for expansive resolution
+  const chartWidth = Math.max(700, containerWidth)
+  const chartHeight = 480
+  const padding = { top: 45, right: 45, bottom: 55, left: 55 }
 
   const effectiveWidth = chartWidth - padding.left - padding.right
   const effectiveHeight = chartHeight - padding.top - padding.bottom
@@ -525,11 +515,10 @@ function Metrics() {
         </div>
 
         {/* SVG Mountain Elevation Canvas */}
-        <div className={styles.svgWrapper}>
+        <div ref={svgWrapperRef} className={styles.svgWrapper}>
           <svg
             className={styles.mountainSvg}
             viewBox={`0 0 ${chartWidth} ${chartHeight}`}
-            preserveAspectRatio="none"
           >
             <defs>
               {/* Mountain Silhouettes Linear Gradients */}
@@ -555,10 +544,10 @@ function Metrics() {
             <path
               d={`
                 M ${padding.left} ${baselineY}
-                L ${padding.left} ${baselineY - 140}
-                Q ${padding.left + effectiveWidth * 0.25} ${baselineY - 210} ${padding.left + effectiveWidth * 0.45} ${baselineY - 160}
-                T ${padding.left + effectiveWidth * 0.8} ${baselineY - 230}
-                L ${padding.left + effectiveWidth} ${baselineY - 180}
+                L ${padding.left} ${baselineY - effectiveHeight * 0.52}
+                Q ${padding.left + effectiveWidth * 0.25} ${baselineY - effectiveHeight * 0.80} ${padding.left + effectiveWidth * 0.45} ${baselineY - effectiveHeight * 0.60}
+                T ${padding.left + effectiveWidth * 0.8} ${baselineY - effectiveHeight * 0.86}
+                L ${padding.left + effectiveWidth} ${baselineY - effectiveHeight * 0.68}
                 L ${padding.left + effectiveWidth} ${baselineY}
                 Z
               `}
@@ -569,10 +558,10 @@ function Metrics() {
             <path
               d={`
                 M ${padding.left} ${baselineY}
-                L ${padding.left} ${baselineY - 80}
-                Q ${padding.left + effectiveWidth * 0.18} ${baselineY - 170} ${padding.left + effectiveWidth * 0.38} ${baselineY - 110}
-                T ${padding.left + effectiveWidth * 0.72} ${baselineY - 180}
-                L ${padding.left + effectiveWidth} ${baselineY - 130}
+                L ${padding.left} ${baselineY - effectiveHeight * 0.30}
+                Q ${padding.left + effectiveWidth * 0.18} ${baselineY - effectiveHeight * 0.64} ${padding.left + effectiveWidth * 0.38} ${baselineY - effectiveHeight * 0.42}
+                T ${padding.left + effectiveWidth * 0.72} ${baselineY - effectiveHeight * 0.68}
+                L ${padding.left + effectiveWidth} ${baselineY - effectiveHeight * 0.50}
                 L ${padding.left + effectiveWidth} ${baselineY}
                 Z
               `}
@@ -780,15 +769,7 @@ function Metrics() {
           )}
         </div>
 
-        {/* 4. Automated Discrete Insight (Based purely on study data) */}
-        {automatedInsight && (
-          <div className={styles.insightBox}>
-            <div className={styles.insightIconWrap}>
-              <Sparkles size={16} />
-            </div>
-            <p className={styles.insightText}>{automatedInsight}</p>
-          </div>
-        )}
+
       </div>
     </div>
   )
