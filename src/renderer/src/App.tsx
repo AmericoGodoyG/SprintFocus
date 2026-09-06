@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import { useTheme } from './hooks/useTheme'
 import MainLayout from './components/layout/MainLayout'
 import StudyFlowSlider from './components/layout/StudyFlowSlider'

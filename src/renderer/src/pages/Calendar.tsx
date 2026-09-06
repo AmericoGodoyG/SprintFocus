@@ -5,7 +5,6 @@ import {
   Calendar as CalendarIcon,
   Clock,
   Flame,
-  CheckCircle2,
   BookOpen,
   Sparkles,
   ArrowRight
