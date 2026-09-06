@@ -1,7 +1,7 @@
 {
   "name": "sprintfocus",
   "version": "1.0.0",
-  "description": "SprintFocus — Ambiente pessoal de estudos com Pomodoro, Flash Cards e IA",
+  "description": "SprintFocus — Ambiente pessoal de foco e estudos com Pomodoro, Métricas e Calendário",
   "main": "./out/main/index.js",
   "author": "SprintFocus",
   "license": "MIT",

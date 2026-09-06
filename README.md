@@ -5,7 +5,7 @@
 <h1 align="center">📚 SprintFocus</h1>
 
 <p align="center">
-  <strong>Ambiente pessoal de estudos com Pomodoro, Flash Cards e Inteligência Artificial</strong>
+  <strong>Ambiente pessoal de foco e estudos com Pomodoro, Métricas de Evolução e Calendário</strong>
 </p>
 
 <p align="center">
