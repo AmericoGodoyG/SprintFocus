@@ -14,20 +14,6 @@ interface Topic {
   created_at?: string
 }
 
-interface Flashcard {
-  id: number
-  pdf_id: number | null
-  subject_id: number | null
-  topic_id: number | null
-  question: string
-  answer: string
-  difficulty: string
-  source: string
-  review_count: number
-  next_review?: string
-  ease_factor?: number
-  interval_days?: number
-}
 
 const DEFAULT_SUBJECTS: Subject[] = [
   { id: 1, name: 'Matemática', color: '#6641ff', created_at: new Date().toISOString() },
@@ -241,109 +227,6 @@ export function initBrowserApiFallback(): void {
     deleteSession: async (id: number): Promise<boolean> => {
       const sessions = getItem<any[]>('sprintfocus_sessions', [])
       setItem('sprintfocus_sessions', sessions.filter(s => s.id !== id))
-      return true
-    },
-
-    // === Flashcards ===
-    createFlashcard: async (data: any): Promise<Flashcard> => {
-      const cards = getItem<Flashcard[]>('sprintfocus_flashcards', [])
-      const newCard: Flashcard = {
-        id: Date.now(),
-        pdf_id: data.pdf_id || null,
-        subject_id: data.subject_id || null,
-        topic_id: data.topic_id || null,
-        question: data.question,
-        answer: data.answer,
-        difficulty: data.difficulty || 'medium',
-        source: data.source || 'manual',
-        review_count: 0
-      }
-      setItem('sprintfocus_flashcards', [newCard, ...cards])
-      return newCard
-    },
-    createFlashcardsBatch: async (cards: any[]): Promise<any> => {
-      const existing = getItem<Flashcard[]>('sprintfocus_flashcards', [])
-      const mapped = cards.map((c, idx) => ({ id: Date.now() + idx, ...c, review_count: 0 }))
-      setItem('sprintfocus_flashcards', [...mapped, ...existing])
-      return mapped
-    },
-    getFlashcards: async (subjectId?: number, topicId?: number, search?: string): Promise<Flashcard[]> => {
-      let cards = getItem<Flashcard[]>('sprintfocus_flashcards', [])
-      if (subjectId) cards = cards.filter(c => c.subject_id === subjectId)
-      if (topicId) cards = cards.filter(c => c.topic_id === topicId)
-      if (search) {
-        const q = search.toLowerCase()
-        cards = cards.filter(c => c.question.toLowerCase().includes(q) || c.answer.toLowerCase().includes(q))
-      }
-      return cards
-    },
-    getFlashcardsForReview: async (limit = 20, subjectId?: number): Promise<Flashcard[]> => {
-      let cards = getItem<Flashcard[]>('sprintfocus_flashcards', [])
-      if (subjectId) cards = cards.filter(c => c.subject_id === subjectId)
-      return cards.slice(0, limit)
-    },
-    updateFlashcard: async (id: number, data: any): Promise<any> => {
-      const cards = getItem<Flashcard[]>('sprintfocus_flashcards', [])
-      const index = cards.findIndex(c => c.id === id)
-      if (index !== -1) {
-        cards[index] = { ...cards[index], ...data }
-        setItem('sprintfocus_flashcards', cards)
-        return cards[index]
-      }
-      return null
-    },
-    deleteFlashcard: async (id: number): Promise<boolean> => {
-      const cards = getItem<Flashcard[]>('sprintfocus_flashcards', [])
-      setItem('sprintfocus_flashcards', cards.filter(c => c.id !== id))
-      return true
-    },
-    addFlashcardReview: async (flashcardId: number, result: string, difficulty: string): Promise<any> => {
-      const cards = getItem<Flashcard[]>('sprintfocus_flashcards', [])
-      const index = cards.findIndex(c => c.id === flashcardId)
-      if (index !== -1) {
-        cards[index].review_count = (cards[index].review_count || 0) + 1
-        cards[index].difficulty = difficulty
-        setItem('sprintfocus_flashcards', cards)
-      }
-      return true
-    },
-    getFlashcardStats: async (): Promise<any> => {
-      const cards = getItem<Flashcard[]>('sprintfocus_flashcards', [])
-      return { total: cards.length, reviewed: cards.filter(c => c.review_count > 0).length }
-    },
-    getFlashcardReviewsCount: async (): Promise<any[]> => {
-      return []
-    },
-
-    // === PDFs ===
-    selectPdfFile: async (): Promise<string | null> => {
-      alert('Seleção nativa de arquivos disponível no aplicativo Desktop.')
-      return null
-    },
-    extractPdfText: async (): Promise<string> => '',
-    getPdfs: async (): Promise<any[]> => getItem<any[]>('sprintfocus_pdfs', []),
-    getPdfById: async (id: number): Promise<any> => {
-      const list = getItem<any[]>('sprintfocus_pdfs', [])
-      return list.find(p => p.id === id)
-    },
-    createPdf: async (data: any): Promise<any> => {
-      const list = getItem<any[]>('sprintfocus_pdfs', [])
-      const newPdf = { id: Date.now(), ...data }
-      setItem('sprintfocus_pdfs', [...list, newPdf])
-      return newPdf
-    },
-    updatePdfSummary: async (id: number, summary: string): Promise<any> => {
-      const list = getItem<any[]>('sprintfocus_pdfs', [])
-      const index = list.findIndex(p => p.id === id)
-      if (index !== -1) {
-        list[index].summary = summary
-        setItem('sprintfocus_pdfs', list)
-      }
-      return true
-    },
-    deletePdf: async (id: number): Promise<boolean> => {
-      const list = getItem<any[]>('sprintfocus_pdfs', [])
-      setItem('sprintfocus_pdfs', list.filter(p => p.id !== id))
       return true
     },
 

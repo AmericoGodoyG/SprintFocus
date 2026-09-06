@@ -28,14 +28,11 @@
 
 | Módulo | Descrição |
 |---|---|
-| 🍅 **Pomodoro Timer** | Timer de estudo com ciclos configuráveis (estudo, pausa curta, pausa longa), notificações nativas e controle de sessões |
-| 🃏 **Flash Cards** | Criação manual ou gerada por IA, sistema de repetição espaçada com fator de facilidade e agendamento inteligente de revisão |
-| 📊 **Métricas** | Dashboard com gráficos de tempo estudado, distribuição por matéria, streak de dias consecutivos e estatísticas de revisão |
-| 📅 **Calendário** | Visualização mensal de todas as sessões de estudo com detalhes por dia |
-| 📄 **PDFs** | Importação de documentos PDF com extração de texto e sumarização via IA |
-| 🤖 **Integração com IA** | Suporte a Google Gemini e OpenAI para gerar resumos, flashcards e responder perguntas sobre o conteúdo |
-| 💾 **Backup** | Exportação e importação do banco de dados para backup dos seus dados |
-| 🎨 **Temas** | Suporte a tema claro e escuro com persistência de preferência |
+| 🍅 **Pomodoro Timer** | Timer de estudo com ciclos configuráveis (foco, pausa curta, pausa longa), notificações nativas e controle de sessões |
+| 📊 **Métricas de Evolução** | Dashboard com gráfico vetorial de montanha, tempos estudados (hoje, ontem, semana, mês, média) e insights automáticos |
+| 📅 **Calendário** | Visualização mensal de todas as sessões de estudo com heatmap diário e histórico detalhado |
+| 💾 **Backup** | Exportação e importação do banco de dados SQLite local para segurança dos seus dados |
+| 🎨 **Temas** | Suporte a tema claro e escuro com persistência automática de preferência |
 
 ---
 
@@ -65,14 +62,6 @@
 | Tecnologia | Versão | Uso |
 |---|---|---|
 | [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) | 11.7.0 | Banco de dados SQLite embarcado |
-| [pdfjs-dist](https://mozilla.github.io/pdf.js/) | 4.8.69 | Extração de texto de PDFs |
-
-### Integrações de IA
-
-| Tecnologia | Versão | Uso |
-|---|---|---|
-| [@google/generative-ai](https://ai.google.dev/) | 0.21.0 | Google Gemini API |
-| [openai](https://platform.openai.com/) | 4.73.0 | OpenAI API (GPT) |
 
 ---
 
@@ -93,14 +82,10 @@ O projeto segue a arquitetura padrão do Electron com **3 camadas isoladas** e c
 │  │  │  (SQLite)   │  │              │  │   + Zustand        │  │ │
 │  │  └────────────┘  │              │  └────────────────────┘  │ │
 │  │  ┌────────────┐  │              │  ┌────────────────────┐  │ │
-│  │  │ AI Service  │  │              │  │   Pages:           │  │ │
-│  │  │ Gemini/GPT  │  │              │  │   - Pomodoro       │  │ │
-│  │  └────────────┘  │              │  │   - Metrics         │  │ │
-│  │  ┌────────────┐  │              │  │   - Calendar        │  │ │
-│  │  │ PDF Parser  │  │              │  └────────────────────┘  │ │
-│  │  └────────────┘  │              │  ┌────────────────────┐  │ │
-│  │  ┌────────────┐  │              │  │   CSS Modules      │  │ │
-│  │  │ Backup Svc  │  │              │  │   + Animations     │  │ │
+│  │  │ Backup Svc │  │              │  │   Pages (Slider):  │  │ │
+│  │  └────────────┘  │              │  │   - Pomodoro       │  │ │
+│  │  ┌────────────┐  │              │  │   - Metrics (SVG)  │  │ │
+│  │  │ Notif Svc  │  │              │  │   - Calendar       │  │ │
 │  │  └────────────┘  │              │  └────────────────────┘  │ │
 │  └──────────────────┘              └──────────────────────────┘ │
 │              ▲                                                  │
@@ -110,6 +95,7 @@ O projeto segue a arquitetura padrão do Electron com **3 camadas isoladas** e c
 │  │  (Context Bridge)   │                                        │
 │  │  Expõe API segura   │                                        │
 │  │  via window.api     │                                        │
+│  │  (Sessões/Config)   │                                        │
 │  └────────────────────┘                                         │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -118,30 +104,26 @@ O projeto segue a arquitetura padrão do Electron com **3 camadas isoladas** e c
 
 | Camada | Diretório | Responsabilidade |
 |---|---|---|
-| **Main Process** | `src/main/` | Lógica de backend — banco de dados, serviços de IA, parser de PDF, backup e gerenciamento de janelas |
+| **Main Process** | `src/main/` | Lógica de backend — banco de dados SQLite, backup, notificações nativas e gerenciamento de janelas |
 | **Preload** | `src/preload/` | Bridge de segurança — expõe uma API tipada via `contextBridge` para o renderer, mantendo `contextIsolation` ativo |
-| **Renderer** | `src/renderer/` | Interface de usuário — React com roteamento, estado global e estilização via CSS Modules |
+| **Renderer** | `src/renderer/` | Interface de usuário — React com navegação por slider, tema escuro/claro e estilização via CSS Modules |
 
 ### Padrões de Projeto
 
-- **Repository Pattern** — Cada entidade do banco (`subjects`, `topics`, `sessions`, `flashcards`, `pdfs`, `settings`) possui um repositório dedicado em `src/main/database/repositories/`
-- **Provider Pattern (IA)** — Interface `AIProvider` com implementações intercambiáveis (`GeminiProvider`, `OpenAIProvider`)
-- **IPC Handlers** — Handlers organizados por domínio (`database.ipc`, `ai.ipc`, `pdf.ipc`, `settings.ipc`, `backup.ipc`, `notification.ipc`)
-- **State Management** — Zustand para gerenciamento de estado leve no frontend (ex: tema)
+- **Repository Pattern** — Repositórios dedicados para persistência em `src/main/database/repositories/` (`sessions`, `settings`, `subjects`, `topics`)
+- **IPC Handlers** — Handlers organizados por domínio (`database.ipc`, `settings.ipc`, `backup.ipc`, `notification.ipc`)
+- **State Management** — Zustand para gerenciamento de estado de tema no frontend
+- **Native SVG Visualization** — Gráficos vetoriais de elevação e montanha renderizados via SVG nativo
 
 ### Banco de Dados (SQLite)
 
 ```
 subjects ──┐
             ├──► topics
-            ├──► study_sessions
-            ├──► flashcards ──► flashcard_reviews
-            └──► pdf_documents
+            └──► study_sessions
 
-app_settings (key-value)
+app_settings (key-value: foco, pausas, ciclos, tema)
 ```
-
-Chaves API são armazenadas com criptografia via `electron.safeStorage`.
 
 ---
 
@@ -163,23 +145,13 @@ AppPomodoro/
 │   │   │       ├── subjects.repo.ts
 │   │   │       ├── topics.repo.ts
 │   │   │       ├── sessions.repo.ts
-│   │   │       ├── flashcards.repo.ts
-│   │   │       ├── pdfs.repo.ts
 │   │   │       └── settings.repo.ts
 │   │   ├── ipc/                    # Handlers IPC por domínio
 │   │   │   ├── index.ts
 │   │   │   ├── database.ipc.ts
-│   │   │   ├── ai.ipc.ts
-│   │   │   ├── pdf.ipc.ts
 │   │   │   ├── settings.ipc.ts
 │   │   │   ├── backup.ipc.ts
 │   │   │   └── notification.ipc.ts
-│   │   └── services/
-│   │       └── ai/                 # Provedores de IA
-│   │           ├── ai-provider.interface.ts
-│   │           ├── gemini.provider.ts
-│   │           ├── openai.provider.ts
-│   │           └── prompts.ts
 │   ├── preload/                    # 🔒 Script de preload
 │   │   ├── index.ts                # Context Bridge (window.api)
 │   │   └── index.d.ts             # Tipos do preload
@@ -278,20 +250,7 @@ npm run preview
 npm run test:e2e
 ```
 
----
 
-## ⚙️ Configuração de IA
-
-Para utilizar as funcionalidades de IA (resumos, geração de flashcards, perguntas), configure uma API key dentro do app:
-
-1. Abra as configurações do app
-2. Selecione o provedor: **Google Gemini** ou **OpenAI**
-3. Insira sua API key (armazenada com criptografia local via `safeStorage`)
-
-| Provedor | Modelo Padrão |
-|---|---|
-| Google Gemini | `gemini-2.0-flash` |
-| OpenAI | `gpt-4o-mini` |
 
 ---
 

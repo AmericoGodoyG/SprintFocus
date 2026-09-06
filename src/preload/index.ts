@@ -28,28 +28,6 @@ const api = {
   updateSession: (id: number, data: unknown) => ipcRenderer.invoke('db:sessions:update', id, data),
   deleteSession: (id: number) => ipcRenderer.invoke('db:sessions:delete', id),
 
-  // === Flashcards ===
-  createFlashcard: (data: unknown) => ipcRenderer.invoke('db:flashcards:create', data),
-  createFlashcardsBatch: (cards: unknown[]) => ipcRenderer.invoke('db:flashcards:createBatch', cards),
-  getFlashcards: (subjectId?: number, topicId?: number, search?: string) =>
-    ipcRenderer.invoke('db:flashcards:getAll', subjectId, topicId, search),
-  getFlashcardsForReview: (limit?: number, subjectId?: number) =>
-    ipcRenderer.invoke('db:flashcards:getForReview', limit, subjectId),
-  updateFlashcard: (id: number, data: unknown) => ipcRenderer.invoke('db:flashcards:update', id, data),
-  deleteFlashcard: (id: number) => ipcRenderer.invoke('db:flashcards:delete', id),
-  addFlashcardReview: (flashcardId: number, result: string, difficulty: string, responseTime?: number) =>
-    ipcRenderer.invoke('db:flashcards:addReview', flashcardId, result, difficulty, responseTime),
-  getFlashcardStats: () => ipcRenderer.invoke('db:flashcards:getStats'),
-  getFlashcardReviewsCount: (start: string, end: string) => ipcRenderer.invoke('db:flashcards:getReviewsCount', start, end),
-
-  // === PDFs ===
-  selectPdfFile: () => ipcRenderer.invoke('pdf:selectFile'),
-  extractPdfText: (filepath: string) => ipcRenderer.invoke('pdf:extractText', filepath),
-  getPdfs: () => ipcRenderer.invoke('db:pdfs:getAll'),
-  getPdfById: (id: number) => ipcRenderer.invoke('db:pdfs:getById', id),
-  createPdf: (data: unknown) => ipcRenderer.invoke('db:pdfs:create', data),
-  updatePdfSummary: (id: number, summary: string) => ipcRenderer.invoke('db:pdfs:updateSummary', id, summary),
-  deletePdf: (id: number) => ipcRenderer.invoke('db:pdfs:delete', id),
 
   // === Settings ===
   getSettings: () => ipcRenderer.invoke('settings:getAll'),
