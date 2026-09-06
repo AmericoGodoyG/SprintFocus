@@ -92,11 +92,7 @@ export function runMigrations(db: Database.Database): void {
       ('pomodoro_cycles', '4'),
       ('pomodoro_sound', 'true'),
       ('pomodoro_notifications', 'true'),
-      ('theme', 'dark'),
-      ('ai_provider', 'gemini'),
-      ('ai_model', 'gemini-2.0-flash'),
-      ('ai_max_flashcards', '20'),
-      ('ai_temperature', '0.7');
+      ('theme', 'dark');
 
     -- Indexes for performance
     CREATE INDEX IF NOT EXISTS idx_sessions_started_at ON study_sessions(started_at);

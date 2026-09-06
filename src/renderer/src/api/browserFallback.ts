@@ -347,11 +347,6 @@ export function initBrowserApiFallback(): void {
       return true
     },
 
-    // === AI ===
-    generateSummary: async (): Promise<string> => 'Resumo gerado em modo demonstração web.',
-    generateFlashcards: async (): Promise<any[]> => [],
-    askQuestion: async (): Promise<string> => 'Resposta em modo web.',
-
     // === Settings ===
     getSettings: async (): Promise<Record<string, string>> => {
       return getItem<Record<string, string>>('sprintfocus_settings', DEFAULT_SETTINGS)
@@ -370,9 +365,6 @@ export function initBrowserApiFallback(): void {
       const updated = { ...s, ...settings }
       setItem('sprintfocus_settings', updated)
     },
-    setApiKey: async (): Promise<void> => {},
-    getApiKey: async (): Promise<string> => '',
-    hasApiKey: async (): Promise<boolean> => false,
 
     // === Notifications ===
     showNotification: async (title: string, body: string): Promise<void> => {

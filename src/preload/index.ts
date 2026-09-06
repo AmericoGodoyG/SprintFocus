@@ -51,19 +51,11 @@ const api = {
   updatePdfSummary: (id: number, summary: string) => ipcRenderer.invoke('db:pdfs:updateSummary', id, summary),
   deletePdf: (id: number) => ipcRenderer.invoke('db:pdfs:delete', id),
 
-  // === AI ===
-  generateSummary: (text: string) => ipcRenderer.invoke('ai:generateSummary', text),
-  generateFlashcards: (text: string, maxCards?: number) => ipcRenderer.invoke('ai:generateFlashcards', text, maxCards),
-  askQuestion: (question: string, context: string) => ipcRenderer.invoke('ai:askQuestion', question, context),
-
   // === Settings ===
   getSettings: () => ipcRenderer.invoke('settings:getAll'),
   getSetting: (key: string) => ipcRenderer.invoke('settings:get', key),
   setSetting: (key: string, value: string) => ipcRenderer.invoke('settings:set', key, value),
   setSettings: (settings: Record<string, string>) => ipcRenderer.invoke('settings:setMany', settings),
-  setApiKey: (provider: string, key: string) => ipcRenderer.invoke('settings:setApiKey', provider, key),
-  getApiKey: (provider: string) => ipcRenderer.invoke('settings:getApiKey', provider),
-  hasApiKey: (provider: string) => ipcRenderer.invoke('settings:hasApiKey', provider),
 
   // === Notifications ===
   showNotification: (title: string, body: string) => ipcRenderer.invoke('notification:show', title, body),
