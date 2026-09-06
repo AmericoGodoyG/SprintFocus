@@ -75,11 +75,11 @@ O projeto segue a arquitetura padrão do Electron com **3 camadas isoladas** e c
 │                                                                 │
 │  ┌──────────────────┐  IPC Bridge  ┌──────────────────────────┐ │
 │  │   Main Process   │◄────────────►│    Renderer Process      │ │
-│  │   (Node.js)      │  (invoke/    │    (Chromium)             │ │
+│  │   (Node.js)      │  (invoke/    │    (Chromium)            │ │
 │  │                  │   handle)    │                          │ │
 │  │  ┌────────────┐  │              │  ┌────────────────────┐  │ │
-│  │  │  Database   │  │              │  │   React + Router   │  │ │
-│  │  │  (SQLite)   │  │              │  │   + Zustand        │  │ │
+│  │  │  Database  │  │              │  │   React + Router   │  │ │
+│  │  │  (SQLite)  │  │              │  │   + Zustand        │  │ │
 │  │  └────────────┘  │              │  └────────────────────┘  │ │
 │  │  ┌────────────┐  │              │  ┌────────────────────┐  │ │
 │  │  │ Backup Svc │  │              │  │   Pages (Slider):  │  │ │
@@ -91,11 +91,11 @@ O projeto segue a arquitetura padrão do Electron com **3 camadas isoladas** e c
 │              ▲                                                  │
 │              │                                                  │
 │  ┌───────────┴────────┐                                         │
-│  │  Preload Script     │                                        │
-│  │  (Context Bridge)   │                                        │
-│  │  Expõe API segura   │                                        │
-│  │  via window.api     │                                        │
-│  │  (Sessões/Config)   │                                        │
+│  │  Preload Script    │                                         │
+│  │  (Context Bridge)  │                                         │
+│  │  Expõe API segura  │                                         │
+│  │  via window.api    │                                         │
+│  │  (Sessões/Config)  │                                         │
 │  └────────────────────┘                                         │
 └─────────────────────────────────────────────────────────────────┘
 ```

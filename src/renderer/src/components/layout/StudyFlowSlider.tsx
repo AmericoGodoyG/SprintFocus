@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, BarChart3, Timer, CalendarDays, LucideIcon, Sun, Moon } from 'lucide-react'
 import { useTheme } from '../../hooks/useTheme'
-import appIcon from '../../assets/icon.png'
 import Metrics from '../../pages/Metrics'
 import Pomodoro from '../../pages/Pomodoro'
 import Calendar from '../../pages/Calendar'
@@ -35,11 +34,73 @@ export default function StudyFlowSlider() {
   const wheelLockRef = useRef(false)
   const touchStartXRef = useRef<number | null>(null)
 
+  const sliderWrapperRef = useRef<HTMLDivElement>(null)
+  const slidePanesRef = useRef<(HTMLDivElement | null)[]>([])
+  const [arrowOffset, setArrowOffset] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const dist = Math.max(0, (window.innerWidth - 1100) / 2)
+      return Math.max(20, Math.round(dist / 2 - 23))
+    }
+    return 32
+  })
+
   // Synchronize state when URL changes (e.g. from Sidebar links)
   useEffect(() => {
     const targetIdx = getIndexFromPath(location.pathname)
     setActiveIndex(targetIdx)
   }, [location.pathname])
+
+  const updateArrowPosition = useCallback(() => {
+    const pane = slidePanesRef.current[activeIndex]
+    const wrapper = sliderWrapperRef.current
+    if (!wrapper) return
+
+    const viewportWidth = wrapper.clientWidth || window.innerWidth
+    let contentWidth = 1100
+
+    if (pane) {
+      // Find the visual central container (e.g. unifiedChamber for Pomodoro or page container)
+      const chamber = pane.querySelector<HTMLElement>('[class*="unifiedChamber"]')
+      const mainChild = pane.firstElementChild as HTMLElement | null
+      if (chamber && chamber.offsetWidth > 0) {
+        contentWidth = chamber.offsetWidth
+      } else if (mainChild && mainChild.offsetWidth > 0) {
+        contentWidth = mainChild.offsetWidth
+      }
+    }
+
+    // Distance from screen border to central content border
+    const distanceToContent = Math.max(0, (viewportWidth - contentWidth) / 2)
+    // Half the distance between the screen border and the central content border, minus half arrow width (46px / 2 = 23px)
+    const computedOffset = Math.max(20, Math.round(distanceToContent / 2 - 23))
+    setArrowOffset(computedOffset)
+  }, [activeIndex])
+
+  useEffect(() => {
+    updateArrowPosition()
+    const timer = setTimeout(updateArrowPosition, 40)
+
+    window.addEventListener('resize', updateArrowPosition)
+
+    const observer = new ResizeObserver(() => {
+      updateArrowPosition()
+    })
+
+    if (sliderWrapperRef.current) {
+      observer.observe(sliderWrapperRef.current)
+    }
+
+    const activePane = slidePanesRef.current[activeIndex]
+    if (activePane) {
+      observer.observe(activePane)
+    }
+
+    return () => {
+      clearTimeout(timer)
+      window.removeEventListener('resize', updateArrowPosition)
+      observer.disconnect()
+    }
+  }, [activeIndex, updateArrowPosition])
 
   const goToSlide = useCallback((index: number) => {
     if (index < 0 || index >= FLOW_STEPS.length) return
@@ -100,7 +161,9 @@ export default function StudyFlowSlider() {
 
   return (
     <div
+      ref={sliderWrapperRef}
       className={styles.sliderWrapper}
+      style={{ '--arrow-offset': `${arrowOffset}px` } as React.CSSProperties}
       onWheel={handleWheel}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
@@ -108,7 +171,6 @@ export default function StudyFlowSlider() {
       {/* Top Menu Bar — Brand Logo, Flow Navigation Pills & Theme Toggle */}
       <header className={styles.topBarContainer} aria-label="Menu superior">
         <div className={styles.topBarBrand}>
-          <img src={appIcon} alt="SprintFocus Logo" className={styles.brandLogo} />
           <span className={styles.brandTitle}>SprintFocus</span>
         </div>
 
@@ -158,6 +220,7 @@ export default function StudyFlowSlider() {
         <button
           type="button"
           className={`${styles.arrowBtn} ${styles.arrowPrev}`}
+          style={{ left: `${arrowOffset}px` }}
           onClick={handlePrev}
           id="flow-arrow-prev"
           data-testid="flow-arrow-prev"
@@ -176,6 +239,7 @@ export default function StudyFlowSlider() {
         <button
           type="button"
           className={`${styles.arrowBtn} ${styles.arrowNext}`}
+          style={{ right: `${arrowOffset}px` }}
           onClick={handleNext}
           id="flow-arrow-next"
           data-testid="flow-arrow-next"
@@ -196,17 +260,32 @@ export default function StudyFlowSlider() {
           style={{ transform: `translateX(-${activeIndex * 100}%)` }}
         >
           {/* Slide 0: Métricas */}
-          <div className={styles.slidePane} data-slide-index="0" aria-hidden={activeIndex !== 0}>
+          <div
+            ref={el => { slidePanesRef.current[0] = el }}
+            className={styles.slidePane}
+            data-slide-index="0"
+            aria-hidden={activeIndex !== 0}
+          >
             <Metrics />
           </div>
 
           {/* Slide 1: Pomodoro */}
-          <div className={styles.slidePane} data-slide-index="1" aria-hidden={activeIndex !== 1}>
+          <div
+            ref={el => { slidePanesRef.current[1] = el }}
+            className={styles.slidePane}
+            data-slide-index="1"
+            aria-hidden={activeIndex !== 1}
+          >
             <Pomodoro />
           </div>
 
           {/* Slide 2: Calendário */}
-          <div className={styles.slidePane} data-slide-index="2" aria-hidden={activeIndex !== 2}>
+          <div
+            ref={el => { slidePanesRef.current[2] = el }}
+            className={styles.slidePane}
+            data-slide-index="2"
+            aria-hidden={activeIndex !== 2}
+          >
             <Calendar />
           </div>
         </div>
