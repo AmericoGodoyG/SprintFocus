@@ -372,12 +372,8 @@ function Metrics() {
 
   return (
     <div className={styles.metrics}>
-      {/* 1. Header: Minimalist, Inspiring, Automated */}
+      {/* 1. Action Header */}
       <div className={styles.headerRow}>
-        <div>
-          <h1 className={styles.title}>Métricas</h1>
-          <p className={styles.subtitle}>Minha Evolução — Cada hora estudada deixa sua marca.</p>
-        </div>
 
         <button
           type="button"
@@ -386,7 +382,7 @@ function Metrics() {
           title="Ir para o Pomodoro e iniciar uma sessão de foco"
         >
           <Timer size={16} />
-          <span>Iniciar Pomodoro</span>
+          <span>Timer</span>
         </button>
       </div>
 
@@ -695,9 +691,8 @@ function Metrics() {
                     cx={pt.x}
                     cy={pt.y}
                     r={isHovered ? 6 : isSummit ? 5 : 4}
-                    className={`${styles.waypointDot} ${
-                      isSummit ? styles.summitDot : isLatest ? styles.latestDot : ''
-                    } ${isHovered ? styles.hoveredDot : ''}`}
+                    className={`${styles.waypointDot} ${isSummit ? styles.summitDot : isLatest ? styles.latestDot : ''
+                      } ${isHovered ? styles.hoveredDot : ''}`}
                   />
 
                   {/* X-Axis Day/Date Label */}

@@ -3,14 +3,20 @@ import {
   ChevronLeft,
   ChevronRight,
   Calendar as CalendarIcon,
-  Clock,
   Flame,
-  BookOpen,
-  Sparkles,
-  ArrowRight
+  Check,
+  Plus,
+  Trash2,
+  Pencil,
+  X
 } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
 import styles from './Calendar.module.css'
+
+interface TodoItem {
+  id: string
+  text: string
+  completed: boolean
+}
 
 interface StudySession {
   id: number
@@ -36,7 +42,6 @@ const MONTH_NAMES = [
 const WEEK_DAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 
 function Calendar() {
-  const navigate = useNavigate()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [sessions, setSessions] = useState<StudySession[]>([])
@@ -54,10 +59,19 @@ function Calendar() {
 
   async function loadStreak() {
     try {
-      const data = await window.api.getStudyStreak() as { currentStreak: number; longestStreak: number }
-      if (data) setStreak(data)
+      const data = await window.api.getStudyStreak() as { current?: number; currentStreak?: number; best?: number; longestStreak?: number } | undefined
+      if (data) {
+        const current = Number(data.current ?? data.currentStreak ?? 0)
+        const longest = Number(data.best ?? data.longestStreak ?? 0)
+        setStreak({
+          currentStreak: isNaN(current) ? 0 : current,
+          longestStreak: isNaN(longest) ? 0 : longest
+        })
+      } else {
+        setStreak({ currentStreak: 0, longestStreak: 0 })
+      }
     } catch {
-      // ignore
+      setStreak({ currentStreak: 0, longestStreak: 0 })
     }
   }
 
@@ -123,7 +137,7 @@ function Calendar() {
       const d = new Date(year, month - 1, dayNum)
       const key = d.toISOString().split('T')[0]
       const daySessions = sessionsByDay.get(key) || []
-      const totalMinutes = daySessions.reduce((acc, s) => acc + (s.actual_duration_minutes || s.duration_minutes || 0), 0)
+      const totalMinutes = daySessions.reduce((acc, s) => acc + ((s as any).actual_minutes || (s as any).actual_duration_minutes || (s as any).duration_minutes || 0), 0)
 
       days.push({
         date: d,
@@ -180,11 +194,80 @@ function Calendar() {
   }, [currentDate, sessionsByDay, selectedDate])
 
   const selectedKey = selectedDate.toISOString().split('T')[0]
-  const selectedDaySessions = sessionsByDay.get(selectedKey) || []
-  const selectedDayTotalMinutes = selectedDaySessions.reduce(
-    (acc, s) => acc + (s.actual_duration_minutes || s.duration_minutes || 0),
-    0
-  )
+
+  const [todos, setTodos] = useState<TodoItem[]>([])
+  const [newTodoText, setNewTodoText] = useState('')
+
+  useEffect(() => {
+    const storageKey = `sprintfocus_todos_${selectedKey}`
+    const saved = localStorage.getItem(storageKey)
+    if (saved) {
+      try {
+        setTodos(JSON.parse(saved))
+        return
+      } catch { }
+    }
+    // Default initial tasks matching Behance style
+    const initialTasks: TodoItem[] = [
+      { id: '1', text: 'ChecK Email', completed: false },
+      { id: '2', text: 'Search for inspirations', completed: true },
+      { id: '3', text: 'Design the task', completed: false },
+      { id: '4', text: 'Post it on Social Media', completed: false },
+      { id: '5', text: 'Get reviews and Update it', completed: false }
+    ]
+    setTodos(initialTasks)
+    localStorage.setItem(storageKey, JSON.stringify(initialTasks))
+  }, [selectedKey])
+
+  function handleToggleTodo(id: string) {
+    const updated = todos.map(t => (t.id === id ? { ...t, completed: !t.completed } : t))
+    setTodos(updated)
+    localStorage.setItem(`sprintfocus_todos_${selectedKey}`, JSON.stringify(updated))
+  }
+
+  function handleAddTodo() {
+    if (!newTodoText.trim()) return
+    const newTask: TodoItem = {
+      id: Date.now().toString(),
+      text: newTodoText.trim(),
+      completed: false
+    }
+    const updated = [...todos, newTask]
+    setTodos(updated)
+    localStorage.setItem(`sprintfocus_todos_${selectedKey}`, JSON.stringify(updated))
+    setNewTodoText('')
+  }
+
+  function handleDeleteTodo(id: string, e: React.MouseEvent) {
+    e.stopPropagation()
+    const updated = todos.filter(t => t.id !== id)
+    setTodos(updated)
+    localStorage.setItem(`sprintfocus_todos_${selectedKey}`, JSON.stringify(updated))
+  }
+
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingText, setEditingText] = useState('')
+
+  function handleStartEdit(todo: TodoItem, e: React.MouseEvent) {
+    e.stopPropagation()
+    setEditingId(todo.id)
+    setEditingText(todo.text)
+  }
+
+  function handleSaveEdit(id: string) {
+    if (!editingText.trim()) return
+    const updated = todos.map(t => (t.id === id ? { ...t, text: editingText.trim() } : t))
+    setTodos(updated)
+    localStorage.setItem(`sprintfocus_todos_${selectedKey}`, JSON.stringify(updated))
+    setEditingId(null)
+    setEditingText('')
+  }
+
+  function handleCancelEdit(e?: React.MouseEvent) {
+    if (e) e.stopPropagation()
+    setEditingId(null)
+    setEditingText('')
+  }
 
   function prevMonth() {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
@@ -209,22 +292,6 @@ function Calendar() {
 
   return (
     <div className={styles.calendarPage}>
-      {/* Header */}
-      <div className={styles.header}>
-        <div>
-          <h1 className={styles.title}>Calendário de Estudos</h1>
-          <p className={styles.subtitle}>Acompanhe seu ritmo de aprendizagem diário</p>
-        </div>
-
-        <div className={styles.streakBadge}>
-          <Flame size={20} className={styles.flameIcon} />
-          <div>
-            <span className={styles.streakCount}>{streak.currentStreak} dias</span>
-            <span className={styles.streakLabel}>Sequência Atual</span>
-          </div>
-        </div>
-      </div>
-
       <div className={styles.calendarContainer}>
         {/* Left / Main: Calendar Grid */}
         <div className={styles.calendarCard}>
@@ -234,14 +301,25 @@ function Calendar() {
               <h2>{MONTH_NAMES[currentDate.getMonth()]} {currentDate.getFullYear()}</h2>
             </div>
 
-            <div className={styles.navButtons}>
-              <button className={styles.todayBtn} onClick={goToToday}>Hoje</button>
-              <button className={styles.navIconBtn} onClick={prevMonth} title="Mês anterior">
-                <ChevronLeft size={18} />
-              </button>
-              <button className={styles.navIconBtn} onClick={nextMonth} title="Próximo mês">
-                <ChevronRight size={18} />
-              </button>
+            <div className={styles.navRightGroup}>
+              {/* Indicador de dias consecutivos */}
+              <div className={styles.streakBadge} title="Sequência de dias consecutivos estudados">
+                <Flame size={18} className={styles.flameIcon} />
+                <div className={styles.streakInfo}>
+                  <span className={styles.streakCount}>{streak?.currentStreak ?? 0} dias</span>
+                  <span className={styles.streakLabel}>Sequência Atual</span>
+                </div>
+              </div>
+
+              <div className={styles.navButtons}>
+                <button className={styles.todayBtn} onClick={goToToday}>Hoje</button>
+                <button className={styles.navIconBtn} onClick={prevMonth} title="Mês anterior">
+                  <ChevronLeft size={18} />
+                </button>
+                <button className={styles.navIconBtn} onClick={nextMonth} title="Próximo mês">
+                  <ChevronRight size={18} />
+                </button>
+              </div>
             </div>
           </div>
 
@@ -258,10 +336,12 @@ function Calendar() {
               const intensity = dayItem.totalMinutes === 0
                 ? 'none'
                 : dayItem.totalMinutes < 30
-                ? 'low'
-                : dayItem.totalMinutes < 90
-                ? 'medium'
-                : 'high'
+                  ? 'low'
+                  : dayItem.totalMinutes < 90
+                    ? 'medium'
+                    : 'high'
+
+              const isStudied = dayItem.totalMinutes > 0 || dayItem.sessions.length > 0
 
               return (
                 <div
@@ -277,8 +357,13 @@ function Calendar() {
                 >
                   <div className={styles.dayTop}>
                     <span className={styles.dayNum}>{dayItem.dayNumber}</span>
-                    {dayItem.totalMinutes > 0 && (
-                      <span className={styles.dayTimeBadge}>{formatTime(dayItem.totalMinutes)}</span>
+                    {isStudied && (
+                      <div className={styles.dayTopRight} title="Dia estudado">
+                        {dayItem.totalMinutes > 0 && (
+                          <span className={styles.dayTimeBadge}>{formatTime(dayItem.totalMinutes)}</span>
+                        )}
+                        <Flame size={14} className={styles.dayFlameIcon} aria-label="Dia estudado" />
+                      </div>
                     )}
                   </div>
 
@@ -319,89 +404,150 @@ function Calendar() {
           </div>
         </div>
 
-        {/* Right / Sidebar: Day Details */}
-        <div className={styles.detailCard}>
-          <div className={styles.detailHeader}>
+        {/* Right / Sidebar: Todo Do */}
+        <div className={styles.todoCard}>
+          <div className={styles.todoHeader}>
             <div>
-              <h3>
+              <h3 className={styles.todoTitle}>To Do List</h3>
+              <p className={styles.todoSubtitle}>
                 {selectedDate.toLocaleDateString('pt-BR', {
                   weekday: 'long',
                   day: 'numeric',
                   month: 'long'
                 })}
-              </h3>
-              <p className={styles.detailSub}>
-                {selectedDaySessions.length > 0
-                  ? `${selectedDaySessions.length} sessão(ões) realizada(s)`
-                  : 'Nenhum estudo registrado neste dia'}
               </p>
-            </div>
-
-            <div className={styles.totalBadge}>
-              <Clock size={16} />
-              <span>{formatTime(selectedDayTotalMinutes)}</span>
             </div>
           </div>
 
-          {/* Sessions List */}
-          <div className={styles.sessionList}>
-            {selectedDaySessions.length === 0 ? (
-              <div className={styles.noSessions}>
-                <Sparkles size={36} className={styles.emptyIcon} />
-                <p>Dia sem registros de estudo</p>
-                <span>Aproveite para iniciar um foco agora!</span>
-                <button
-                  className={styles.startFocusBtn}
-                  onClick={() => navigate('/pomodoro')}
-                >
-                  Ir para o Pomodoro <ArrowRight size={16} />
-                </button>
+          <div className={styles.todoDivider} />
+
+          <div className={styles.todoList}>
+            {todos.map(todo => (
+              <div
+                key={todo.id}
+                className={styles.todoItem}
+                onClick={() => {
+                  if (editingId !== todo.id) {
+                    handleToggleTodo(todo.id)
+                  }
+                }}
+              >
+                {editingId === todo.id ? (
+                  <div className={styles.todoEditRow} onClick={e => e.stopPropagation()}>
+                    <input
+                      type="text"
+                      className={styles.todoEditInput}
+                      value={editingText}
+                      onChange={e => setEditingText(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          handleSaveEdit(todo.id)
+                        } else if (e.key === 'Escape') {
+                          handleCancelEdit()
+                        }
+                      }}
+                      autoFocus
+                    />
+                    <button
+                      type="button"
+                      className={styles.todoEditSaveBtn}
+                      onClick={() => handleSaveEdit(todo.id)}
+                      title="Salvar alteração"
+                      aria-label="Salvar alteração"
+                    >
+                      <Check size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.todoEditCancelBtn}
+                      onClick={handleCancelEdit}
+                      title="Cancelar"
+                      aria-label="Cancelar edição"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      className={`
+                        ${styles.todoCheckbox}
+                        ${todo.completed ? styles.todoCheckboxChecked : ''}
+                      `}
+                      aria-label={todo.completed ? 'Desmarcar tarefa' : 'Marcar como concluída'}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleToggleTodo(todo.id)
+                      }}
+                    >
+                      {todo.completed && (
+                        <Check size={13} strokeWidth={3.2} className={styles.todoCheckIcon} />
+                      )}
+                    </button>
+
+                    <span
+                      className={`
+                        ${styles.todoText}
+                        ${todo.completed ? styles.todoTextChecked : ''}
+                      `}
+                    >
+                      {todo.text}
+                    </span>
+
+                    <div className={styles.todoActions} onClick={e => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        className={styles.todoActionBtn}
+                        onClick={(e) => handleStartEdit(todo, e)}
+                        title="Editar tarefa"
+                        aria-label="Editar tarefa"
+                      >
+                        <Pencil size={13} />
+                      </button>
+                      <button
+                        type="button"
+                        className={`${styles.todoActionBtn} ${styles.todoDeleteBtn}`}
+                        onClick={(e) => handleDeleteTodo(todo.id, e)}
+                        title="Excluir tarefa"
+                        aria-label="Excluir tarefa"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
-            ) : (
-              selectedDaySessions.map(session => (
-                <div key={session.id} className={styles.sessionItem}>
-                  <div className={styles.sessionHeader}>
-                    <div className={styles.subjectTag}>
-                      <span
-                        className={styles.subjectColor}
-                        style={{ background: session.subject_color || 'var(--primary-500)' }}
-                      />
-                      <strong>{session.subject_name || 'Geral'}</strong>
-                    </div>
-                    <span className={`
-                      ${styles.statusBadge}
-                      ${session.status === 'completed' ? styles.statusCompleted : styles.statusInterrupted}
-                    `}>
-                      {session.status === 'completed' ? 'Concluído' : 'Interrompido'}
-                    </span>
-                  </div>
+            ))}
+          </div>
 
-                  {session.topic_name && (
-                    <div className={styles.topicName}>
-                      <BookOpen size={14} />
-                      <span>{session.topic_name}</span>
-                    </div>
-                  )}
+          <div className={styles.todoFooter}>
+            <button
+              type="button"
+              className={styles.todoPlusBtn}
+              onClick={handleAddTodo}
+              title="Adicionar tarefa"
+              aria-label="Adicionar tarefa"
+            >
+              <Plus size={22} color="#ffffff" strokeWidth={2.5} />
+            </button>
 
-                  <div className={styles.sessionMeta}>
-                    <span className={styles.metaDuration}>
-                      <Clock size={13} />
-                      {session.actual_duration_minutes || session.duration_minutes} minutos
-                    </span>
-                    <span className={styles.metaTime}>
-                      {new Date(session.started_at).toLocaleTimeString('pt-BR', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </span>
-                  </div>
-
-                  {session.notes && (
-                    <p className={styles.sessionNote}>"{session.notes}"</p>
-                  )}
-                </div>
-              ))
-            )}
+            <div className={styles.todoInputWrapper}>
+              <input
+                type="text"
+                className={styles.todoInput}
+                placeholder="notes..."
+                value={newTodoText}
+                onChange={e => setNewTodoText(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    handleAddTodo()
+                  }
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>

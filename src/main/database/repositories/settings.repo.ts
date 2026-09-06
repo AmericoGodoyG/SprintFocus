@@ -24,20 +24,3 @@ export function setSetting(key: string, value: string): void {
     ON CONFLICT(key) DO UPDATE SET value = ?, updated_at = CURRENT_TIMESTAMP
   `).run(key, value, value)
 }
-
-export function setSettings(settings: Record<string, string>): void {
-  const db = getDatabase()
-  const stmt = db.prepare(`
-    INSERT INTO app_settings (key, value, updated_at)
-    VALUES (?, ?, CURRENT_TIMESTAMP)
-    ON CONFLICT(key) DO UPDATE SET value = ?, updated_at = CURRENT_TIMESTAMP
-  `)
-
-  const updateMany = db.transaction((settings: Record<string, string>) => {
-    for (const [key, value] of Object.entries(settings)) {
-      stmt.run(key, value, value)
-    }
-  })
-
-  updateMany(settings)
-}

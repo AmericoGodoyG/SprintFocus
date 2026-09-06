@@ -61,18 +61,6 @@ export function getSessionById(id: number): StudySession | undefined {
   `).get(id) as StudySession | undefined
 }
 
-export function getAllSessions(limit: number = 100, offset: number = 0): StudySession[] {
-  const db = getDatabase()
-  return db.prepare(`
-    SELECT ss.*, s.name as subject_name, t.name as topic_name
-    FROM study_sessions ss
-    LEFT JOIN subjects s ON ss.subject_id = s.id
-    LEFT JOIN topics t ON ss.topic_id = t.id
-    ORDER BY ss.started_at DESC
-    LIMIT ? OFFSET ?
-  `).all(limit, offset) as StudySession[]
-}
-
 export function getSessionsByDateRange(startDate: string, endDate: string): StudySession[] {
   const db = getDatabase()
   return db.prepare(`
@@ -96,18 +84,6 @@ export function getSessionStats(startDate: string, endDate: string) {
     FROM study_sessions
     WHERE started_at >= ? AND started_at <= ? AND status = 'completed'
   `).get(startDate, endDate)
-}
-
-export function getSessionsBySubject(startDate: string, endDate: string) {
-  const db = getDatabase()
-  return db.prepare(`
-    SELECT s.name, s.color, COALESCE(SUM(ss.actual_minutes), 0) as total_minutes, COUNT(*) as session_count
-    FROM study_sessions ss
-    JOIN subjects s ON ss.subject_id = s.id
-    WHERE ss.started_at >= ? AND ss.started_at <= ? AND ss.status = 'completed'
-    GROUP BY ss.subject_id
-    ORDER BY total_minutes DESC
-  `).all(startDate, endDate)
 }
 
 export function getDailyStudyData(startDate: string, endDate: string) {
@@ -163,27 +139,4 @@ export function getStudyStreak(): { current: number; best: number } {
   }
 
   return { current, best: Math.max(best, current) }
-}
-
-export function updateSession(id: number, data: Partial<StudySession>): StudySession | undefined {
-  const db = getDatabase()
-  const fields: string[] = []
-  const values: unknown[] = []
-
-  if (data.notes !== undefined) { fields.push('notes = ?'); values.push(data.notes) }
-  if (data.subject_id !== undefined) { fields.push('subject_id = ?'); values.push(data.subject_id) }
-  if (data.topic_id !== undefined) { fields.push('topic_id = ?'); values.push(data.topic_id) }
-  if (data.status !== undefined) { fields.push('status = ?'); values.push(data.status) }
-
-  if (fields.length === 0) return getSessionById(id)
-
-  values.push(id)
-  db.prepare(`UPDATE study_sessions SET ${fields.join(', ')} WHERE id = ?`).run(...values)
-  return getSessionById(id)
-}
-
-export function deleteSession(id: number): boolean {
-  const db = getDatabase()
-  const result = db.prepare('DELETE FROM study_sessions WHERE id = ?').run(id)
-  return result.changes > 0
 }

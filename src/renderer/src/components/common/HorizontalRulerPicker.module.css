@@ -1,0 +1,271 @@
+/* Horizontal Ruler Picker — Minimalist Camera Dial / Dynamic Island Aesthetic */
+
+.rulerWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin: 6px 0 2px 0;
+  user-select: none;
+}
+
+/* Recessed Camera Notch Chamber */
+.rulerChamber {
+  position: relative;
+  width: 100%;
+  height: 44px;
+  background: linear-gradient(180deg, rgba(8, 6, 16, 0.92) 0%, rgba(16, 12, 28, 0.82) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-top-color: rgba(255, 255, 255, 0.18);
+  border-radius: 22px;
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, 0.75),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.08),
+    0 4px 12px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  cursor: grab;
+  touch-action: pan-y;
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.rulerChamber:focus-visible {
+  border-color: rgba(250, 204, 21, 0.6);
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, 0.75),
+    0 0 0 2px rgba(250, 204, 21, 0.3);
+}
+
+.interacting .rulerChamber {
+  cursor: grabbing;
+  border-color: rgba(250, 204, 21, 0.4);
+}
+
+:global([data-theme="light"]) .rulerChamber {
+  background: linear-gradient(180deg, rgba(235, 230, 248, 0.96) 0%, rgba(244, 241, 255, 0.90) 100%);
+  border: 1px solid rgba(102, 65, 255, 0.22);
+  border-top-color: rgba(255, 255, 255, 0.95);
+  box-shadow:
+    inset 0 2px 4px rgba(60, 40, 110, 0.14),
+    inset 0 -1px 1px #ffffff,
+    0 3px 10px rgba(102, 65, 255, 0.08);
+}
+
+:global([data-theme="light"]) .rulerChamber:focus-visible {
+  border-color: #d97706;
+  box-shadow:
+    inset 0 2px 4px rgba(60, 40, 110, 0.14),
+    0 0 0 2px rgba(217, 119, 6, 0.35);
+}
+
+/* Viewport with smooth edge vignette fade */
+.ticksViewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Sliding Track centered at 50% to align with yellow marker */
+.ticksTrack {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  height: 100%;
+  will-change: transform;
+}
+
+/* Single Tick Slot */
+.tickContainer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  margin-left: -1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Vertical Bars */
+.tickBar {
+  flex-shrink: 0;
+  border-radius: 1.5px;
+  transition: background-color var(--transition-fast), height var(--transition-fast);
+}
+
+/* Minor ticks (4 bars between major marks) */
+.minorTick {
+  width: 1.5px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.42);
+}
+
+:global([data-theme="light"]) .minorTick {
+  background: rgba(50, 40, 85, 0.45);
+}
+
+/* Major ticks (every 5 min mark) */
+.majorTick {
+  width: 2px;
+  height: 18px;
+  background: #ffffff;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.45);
+}
+
+:global([data-theme="light"]) .majorTick {
+  background: #231942;
+  box-shadow: none;
+}
+
+/* Selected Tick (at current minute mark) */
+.selectedTick {
+  opacity: 0; /* Hidden because the yellow needle overlays it directly */
+}
+
+/* Center Vertical Yellow Marker (Needle) */
+.yellowCenterMarker {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 2.5px;
+  height: 24px;
+  background: #facc15;
+  border-radius: 2px;
+  box-shadow:
+    0 0 8px rgba(250, 204, 21, 0.75),
+    0 0 1px #ffffff;
+  pointer-events: none;
+  z-index: 2;
+  transition: transform var(--transition-fast);
+}
+
+.interacting .yellowCenterMarker {
+  transform: translate(-50%, -50%) scaleY(1.08);
+}
+
+:global([data-theme="light"]) .yellowCenterMarker {
+  background: #f59e0b;
+  box-shadow:
+    0 0 8px rgba(245, 158, 11, 0.65),
+    0 0 1px #ffffff;
+}
+
+
+/* Disabled State */
+.disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* Stepper Box (+ / - / value) below the ruler chamber */
+.stepperBox {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(14, 10, 26, 0.70);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: var(--radius-full);
+  padding: 3px 4px;
+  gap: 4px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.40), 0 2px 6px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all var(--transition-fast);
+  margin-top: 8px;
+  margin-bottom: 2px;
+  flex-shrink: 0;
+}
+
+:global([data-theme="light"]) .stepperBox {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(102, 65, 255, 0.26);
+  box-shadow: inset 0 1px 1px #ffffff, 0 3px 10px rgba(102, 65, 255, 0.10);
+}
+
+.stepperBtn {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  user-select: none;
+  padding: 0;
+}
+
+.stepperBtn:hover:not(:disabled) {
+  background: rgba(124, 77, 255, 0.30);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(102, 65, 255, 0.40);
+  transform: scale(1.06);
+}
+
+.stepperBtn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.stepperBtn:disabled {
+  opacity: 0.30;
+  cursor: not-allowed;
+}
+
+:global([data-theme="light"]) .stepperBtn {
+  background: rgba(102, 65, 255, 0.08);
+  border: 1px solid rgba(102, 65, 255, 0.15);
+  color: #4322c9;
+}
+
+:global([data-theme="light"]) .stepperBtn:hover:not(:disabled) {
+  background: rgba(102, 65, 255, 0.18);
+  border-color: rgba(102, 65, 255, 0.35);
+  color: #2e129e;
+  box-shadow: 0 0 10px rgba(102, 65, 255, 0.25);
+}
+
+.stepperValueDisplay {
+  min-width: 68px;
+  width: 68px;
+  text-align: center;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 3px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+  padding: 0 2px;
+}
+
+.stepperNum {
+  font-size: 14px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+:global([data-theme="light"]) .stepperNum {
+  color: #0c081e;
+  font-weight: 800;
+}
+
+.stepperUnit {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-weight: 600;
+}
+
+:global([data-theme="light"]) .stepperUnit {
+  color: #554877;
+  font-weight: 600;
+}
+
+

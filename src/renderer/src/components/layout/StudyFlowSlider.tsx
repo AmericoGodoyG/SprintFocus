@@ -168,12 +168,8 @@ export default function StudyFlowSlider() {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Top Menu Bar — Brand Logo, Flow Navigation Pills & Theme Toggle */}
+      {/* Top Menu Bar — Flow Navigation Pills & Theme Toggle */}
       <header className={styles.topBarContainer} aria-label="Menu superior">
-        <div className={styles.topBarBrand}>
-          <span className={styles.brandTitle}>SprintFocus</span>
-        </div>
-
         <nav className={styles.flowPills} aria-label="Navegação de telas">
           {FLOW_STEPS.map((step, idx) => {
             const Icon = step.icon

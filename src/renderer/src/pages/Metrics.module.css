@@ -6,11 +6,11 @@
   animation: fadeIn 0.25s ease-out;
 }
 
-/* 1. Header: Minimalist and Inspiring */
+/* 1. Header Action */
 .headerRow {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
+  justify-content: flex-end;
+  align-items: center;
   margin-bottom: var(--space-6);
   flex-wrap: wrap;
   gap: var(--space-4);
@@ -544,3 +544,33 @@
   margin: 0;
   font-weight: 500;
 }
+
+@media (max-width: 540px) {
+  .metricsGrid {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+
+  .metricCard {
+    padding: 16px 18px;
+  }
+
+  .metricValue {
+    font-size: 24px;
+  }
+
+  .chartControlsRow {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .pomodoroLinkBtn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .insightBox {
+    padding: 12px 14px;
+  }
+}
+

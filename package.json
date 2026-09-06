@@ -10,8 +10,8 @@
     "build": "electron-vite build",
     "preview": "electron-vite preview",
     "postinstall": "node -e \"const { execSync } = require('child_process'); execSync('npx prebuild-install --runtime electron --target 33.2.0', { cwd: './node_modules/better-sqlite3', stdio: 'inherit' });\"",
-    "dist": "electron-vite build && electron-builder --win --config",
-    "dist:dir": "electron-vite build && electron-builder --win --dir --config",
+    "dist": "electron-vite build && electron-builder --win",
+    "dist:dir": "electron-vite build && electron-builder --win --dir",
     "test:e2e": "electron scripts/e2e_test.js"
   },
   "dependencies": {
@@ -37,13 +37,16 @@
   "build": {
     "appId": "com.sprintfocus.app",
     "productName": "SprintFocus",
+    "npmRebuild": false,
     "directories": {
       "buildResources": "build",
       "output": "release"
     },
     "files": [
       "out/**/*",
-      "!node_modules"
+      "node_modules/better-sqlite3/**/*",
+      "node_modules/bindings/**/*",
+      "node_modules/file-uri-to-path/**/*"
     ],
     "asarUnpack": [
       "node_modules/better-sqlite3/**/*"

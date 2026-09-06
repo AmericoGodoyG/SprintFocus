@@ -4,6 +4,7 @@ import {
   Check, X, Minus, Plus, Sliders, Square
 } from 'lucide-react'
 import { initBrowserApiFallback } from '../api/browserFallback'
+import { HorizontalRulerPicker } from '../components/common/HorizontalRulerPicker'
 import styles from './Pomodoro.module.css'
 
 function getApi() {
@@ -59,6 +60,17 @@ function Pomodoro() {
   // Reset Timer Confirmation Modal State
   const [showResetConfirmModal, setShowResetConfirmModal] = useState(false)
 
+  // Direct Time Edit on Dial
+  const [isEditingTime, setIsEditingTime] = useState(false)
+  const [customMinutesInput, setCustomMinutesInput] = useState('')
+  const timeInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (isEditingTime) {
+      setTimeout(() => timeInputRef.current?.focus(), 50)
+    }
+  }, [isEditingTime])
+
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
 
@@ -86,13 +98,31 @@ function Pomodoro() {
   }
 
   function handleUpdateStudyMinutes(mins: number) {
-    const val = Math.max(5, Math.min(180, mins))
+    const val = Math.max(1, Math.min(180, mins))
     const updated = { ...settings, studyMinutes: val }
     setSettings(updated)
     if (!isRunning && sessionType === 'study') {
       setTimeLeft(val * 60)
     }
     getApi().setSetting('pomodoro_study_minutes', String(val)).catch(console.error)
+  }
+
+  function handleSaveCustomMinutes(minsToApply?: number) {
+    const rawVal = minsToApply !== undefined ? minsToApply : (timeInputRef.current?.value || customMinutesInput)
+    const parsed = typeof rawVal === 'number' ? rawVal : parseInt(String(rawVal), 10)
+    if (isNaN(parsed) || parsed < 1 || parsed > 180) {
+      setIsEditingTime(false)
+      return
+    }
+
+    if (sessionType === 'study') {
+      handleUpdateStudyMinutes(parsed)
+    } else if (sessionType === 'short_break') {
+      handleUpdateShortBreak(parsed)
+    }
+
+    setTimeLeft(parsed * 60)
+    setIsEditingTime(false)
   }
 
   function handleUpdateShortBreak(mins: number) {
@@ -105,15 +135,6 @@ function Pomodoro() {
     getApi().setSetting('pomodoro_short_break', String(val)).catch(console.error)
   }
 
-  function handleUpdateLongBreak(mins: number) {
-    const val = Math.max(5, Math.min(90, mins))
-    const updated = { ...settings, longBreakMinutes: val }
-    setSettings(updated)
-    if (!isRunning && sessionType === 'long_break') {
-      setTimeLeft(val * 60)
-    }
-    getApi().setSetting('pomodoro_long_break', String(val)).catch(console.error)
-  }
 
   function handleUpdateCycles(cycles: number) {
     const val = Math.max(1, Math.min(12, cycles))
@@ -201,14 +222,10 @@ function Pomodoro() {
     let nextCycle = currentCycle
 
     if (sessionType === 'study') {
-      if (currentCycle >= settings.cyclesBeforeLongBreak) {
-        nextType = 'long_break'
-      } else {
-        nextType = 'short_break'
-      }
+      nextType = 'short_break'
     } else {
       nextType = 'study'
-      if (sessionType === 'long_break') {
+      if (currentCycle >= settings.cyclesBeforeLongBreak) {
         nextCycle = 1
       } else {
         nextCycle = currentCycle + 1
@@ -343,14 +360,10 @@ function Pomodoro() {
     let nextCycle = currentCycle
 
     if (sessionType === 'study') {
-      if (currentCycle >= settings.cyclesBeforeLongBreak) {
-        nextType = 'long_break'
-      } else {
-        nextType = 'short_break'
-      }
+      nextType = 'short_break'
     } else {
       nextType = 'study'
-      if (sessionType === 'long_break') {
+      if (currentCycle >= settings.cyclesBeforeLongBreak) {
         nextCycle = 1
       } else {
         nextCycle = currentCycle + 1
@@ -364,10 +377,6 @@ function Pomodoro() {
 
   return (
     <div className={styles.pomodoro}>
-      <div className={styles.header}>
-        <h1 className={styles.title}>Pomodoro</h1>
-        <p className={styles.subtitle}>Gerencie seus ciclos de foco e pausas para maximizar a produtividade</p>
-      </div>
       <div className={styles.unifiedChamber}>
         {/* Timer Section — Left Chamber */}
         <div className={`${styles.timerColumn} ${styles.timerSection}`}>
@@ -434,7 +443,67 @@ function Pomodoro() {
                 {sessionType === 'study' ? <BookOpen size={13} /> : <Coffee size={13} />}
                 {SESSION_LABELS[sessionType]}
               </span>
-              <span className={styles.time}>{formatTime(timeLeft)}</span>
+
+              {isEditingTime ? (
+                <div className={styles.timeEditBox}>
+                  <div className={styles.timeInputRow}>
+                    <input
+                      ref={timeInputRef}
+                      type="number"
+                      min="1"
+                      max="180"
+                      className={styles.timeInput}
+                      value={customMinutesInput}
+                      onChange={(e) => setCustomMinutesInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSaveCustomMinutes()
+                        if (e.key === 'Escape') setIsEditingTime(false)
+                      }}
+                      placeholder="min"
+                      title="Digite os minutos desejados"
+                    />
+                    <span className={styles.timeInputUnit}>min</span>
+                    <button
+                      type="button"
+                      className={`${styles.timeActionBtn} ${styles.timeConfirmBtn}`}
+                      onClick={() => handleSaveCustomMinutes()}
+                      title="Salvar tempo"
+                      aria-label="Confirmar minutos"
+                    >
+                      <Check size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      className={`${styles.timeActionBtn} ${styles.timeCancelBtn}`}
+                      onClick={() => setIsEditingTime(false)}
+                      title="Cancelar"
+                      aria-label="Cancelar edição de tempo"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className={styles.timeDisplayTrigger}
+                  onClick={() => {
+                    setCustomMinutesInput(String(Math.ceil(timeLeft / 60) || 1))
+                    setIsEditingTime(true)
+                  }}
+                  title="Clique para editar minutos específicos"
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      setCustomMinutesInput(String(Math.ceil(timeLeft / 60) || 1))
+                      setIsEditingTime(true)
+                    }
+                  }}
+                >
+                  <span className={styles.time}>{formatTime(timeLeft)}</span>
+                  <span className={styles.timeHint}>clique para editar</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -445,15 +514,8 @@ function Pomodoro() {
               const isCompleted = cycleNum < currentCycle
               const isCurrent = cycleNum === currentCycle
               return (
-                <div key={idx} className={styles.intervalNodeWrapper}>
-                  <div
-                    className={`
-                      ${styles.intervalNode}
-                      ${isCompleted ? styles.intervalCompleted : ''}
-                      ${isCurrent ? styles.intervalCurrent : ''}
-                    `}
-                  />
-                  {idx < settings.cyclesBeforeLongBreak - 1 && (
+                <div key={cycleNum} className={styles.intervalStep}>
+                  {idx > 0 && (
                     <div
                       className={`
                         ${styles.intervalConnector}
@@ -461,6 +523,15 @@ function Pomodoro() {
                       `}
                     />
                   )}
+                  <div className={styles.intervalNodeAnchor}>
+                    <div
+                      className={`
+                        ${styles.intervalNode}
+                        ${isCompleted ? styles.intervalCompleted : ''}
+                        ${isCurrent ? styles.intervalCurrent : ''}
+                      `}
+                    />
+                  </div>
                 </div>
               )
             })}
@@ -600,50 +671,26 @@ function Pomodoro() {
                 <BookOpen size={14} className={styles.configIconFocus} />
                 <label className={styles.configLabel}>Tempo de Foco</label>
               </div>
-              <div className={styles.stepperBox}>
-                <button
-                  type="button"
-                  className={styles.stepperBtn}
-                  onClick={() => handleUpdateStudyMinutes(settings.studyMinutes - 5)}
-                  disabled={isRunning || settings.studyMinutes <= 5}
-                  title="Diminuir tempo de foco em 5 minutos"
-                  aria-label="Diminuir tempo de foco"
-                  data-testid="btn-focus-minus"
-                >
-                  <Minus size={13} />
-                </button>
-                <div className={styles.stepperValueDisplay}>
-                  <span className={styles.stepperNum} data-testid="val-focus">{settings.studyMinutes}</span>
-                  <span className={styles.stepperUnit}>min</span>
-                </div>
-                <button
-                  type="button"
-                  className={styles.stepperBtn}
-                  onClick={() => handleUpdateStudyMinutes(settings.studyMinutes + 5)}
-                  disabled={isRunning || settings.studyMinutes >= 180}
-                  title="Aumentar tempo de foco em 5 minutos"
-                  aria-label="Aumentar tempo de foco"
-                  data-testid="btn-focus-plus"
-                >
-                  <Plus size={13} />
-                </button>
-              </div>
             </div>
 
-            <div className={styles.presetChipsRow}>
-              {[25, 30, 45, 50, 60].map(min => (
-                <button
-                  key={min}
-                  type="button"
-                  className={`${styles.presetChip} ${settings.studyMinutes === min ? styles.presetChipActive : ''}`}
-                  onClick={() => handleUpdateStudyMinutes(min)}
-                  disabled={isRunning}
-                  data-testid={`chip-focus-${min}`}
-                >
-                  {min}min
-                </button>
-              ))}
-            </div>
+            {/* Horizontal Ruler Picker (Camera Dial Minimalist Slider) */}
+            <HorizontalRulerPicker
+              value={settings.studyMinutes}
+              onChange={handleUpdateStudyMinutes}
+              min={1}
+              max={120}
+              step={1}
+              disabled={isRunning}
+              unit="min"
+              testId="ruler-focus"
+              ariaLabel="Tempo de Foco"
+              stepAmount={1}
+              valTestId="val-focus"
+              btnMinusTestId="btn-focus-minus"
+              btnPlusTestId="btn-focus-plus"
+            />
+
+
           </div>
 
           {/* 2. Tempo de Pausa Curta */}
@@ -653,111 +700,34 @@ function Pomodoro() {
                 <Coffee size={14} className={styles.configIconShortBreak} />
                 <label className={styles.configLabel}>Pausa Curta</label>
               </div>
-              <div className={styles.stepperBox}>
-                <button
-                  type="button"
-                  className={styles.stepperBtn}
-                  onClick={() => handleUpdateShortBreak(settings.shortBreakMinutes - 1)}
-                  disabled={isRunning || settings.shortBreakMinutes <= 1}
-                  title="Diminuir pausa curta em 1 minuto"
-                  aria-label="Diminuir pausa curta"
-                  data-testid="btn-short-break-minus"
-                >
-                  <Minus size={13} />
-                </button>
-                <div className={styles.stepperValueDisplay}>
-                  <span className={styles.stepperNum} data-testid="val-short-break">{settings.shortBreakMinutes}</span>
-                  <span className={styles.stepperUnit}>min</span>
-                </div>
-                <button
-                  type="button"
-                  className={styles.stepperBtn}
-                  onClick={() => handleUpdateShortBreak(settings.shortBreakMinutes + 1)}
-                  disabled={isRunning || settings.shortBreakMinutes >= 60}
-                  title="Aumentar pausa curta em 1 minuto"
-                  aria-label="Aumentar pausa curta"
-                  data-testid="btn-short-break-plus"
-                >
-                  <Plus size={13} />
-                </button>
-              </div>
             </div>
 
-            <div className={styles.presetChipsRow}>
-              {[3, 5, 10, 15].map(min => (
-                <button
-                  key={min}
-                  type="button"
-                  className={`${styles.presetChip} ${settings.shortBreakMinutes === min ? styles.presetChipActive : ''}`}
-                  onClick={() => handleUpdateShortBreak(min)}
-                  disabled={isRunning}
-                  data-testid={`chip-short-break-${min}`}
-                >
-                  {min}min
-                </button>
-              ))}
-            </div>
+            {/* Horizontal Ruler Picker (Camera Dial Minimalist Slider) */}
+            <HorizontalRulerPicker
+              value={settings.shortBreakMinutes}
+              onChange={handleUpdateShortBreak}
+              min={1}
+              max={60}
+              step={1}
+              disabled={isRunning}
+              unit="min"
+              testId="ruler-short-break"
+              ariaLabel="Tempo de Pausa Curta"
+              stepAmount={1}
+              valTestId="val-short-break"
+              btnMinusTestId="btn-short-break-minus"
+              btnPlusTestId="btn-short-break-plus"
+            />
+
+
           </div>
 
-          {/* 3. Tempo de Pausa Longa */}
-          <div className={styles.configGroup} data-testid="config-group-long-break">
-            <div className={styles.configGroupHeader}>
-              <div className={styles.configLabelRow}>
-                <Coffee size={14} className={styles.configIconLongBreak} />
-                <label className={styles.configLabel}>Pausa Longa</label>
-              </div>
-              <div className={styles.stepperBox}>
-                <button
-                  type="button"
-                  className={styles.stepperBtn}
-                  onClick={() => handleUpdateLongBreak(settings.longBreakMinutes - 5)}
-                  disabled={isRunning || settings.longBreakMinutes <= 5}
-                  title="Diminuir pausa longa em 5 minutos"
-                  aria-label="Diminuir pausa longa"
-                  data-testid="btn-long-break-minus"
-                >
-                  <Minus size={13} />
-                </button>
-                <div className={styles.stepperValueDisplay}>
-                  <span className={styles.stepperNum} data-testid="val-long-break">{settings.longBreakMinutes}</span>
-                  <span className={styles.stepperUnit}>min</span>
-                </div>
-                <button
-                  type="button"
-                  className={styles.stepperBtn}
-                  onClick={() => handleUpdateLongBreak(settings.longBreakMinutes + 5)}
-                  disabled={isRunning || settings.longBreakMinutes >= 90}
-                  title="Aumentar pausa longa em 5 minutos"
-                  aria-label="Aumentar pausa longa"
-                  data-testid="btn-long-break-plus"
-                >
-                  <Plus size={13} />
-                </button>
-              </div>
-            </div>
-
-            <div className={styles.presetChipsRow}>
-              {[15, 20, 30, 45].map(min => (
-                <button
-                  key={min}
-                  type="button"
-                  className={`${styles.presetChip} ${settings.longBreakMinutes === min ? styles.presetChipActive : ''}`}
-                  onClick={() => handleUpdateLongBreak(min)}
-                  disabled={isRunning}
-                  data-testid={`chip-long-break-${min}`}
-                >
-                  {min}min
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* 4. Ciclos até Pausa Longa */}
+          {/* 3. Quantidade de ciclos */}
           <div className={styles.configGroup} data-testid="config-group-cycles">
             <div className={styles.configGroupHeader}>
               <div className={styles.configLabelRow}>
                 <RotateCcw size={14} className={styles.configIconCycles} />
-                <label className={styles.configLabel}>Ciclos até Pausa Longa</label>
+                <label className={styles.configLabel}>Quantidade de ciclos</label>
               </div>
               <div className={styles.stepperBox}>
                 <button

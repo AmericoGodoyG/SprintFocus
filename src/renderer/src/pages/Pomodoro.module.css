@@ -3,21 +3,7 @@
   animation: fadeIn var(--transition-slow) ease;
 }
 
-.header {
-  margin-bottom: var(--space-8);
-}
 
-.title {
-  font-size: var(--font-size-3xl);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  color: var(--text-primary);
-}
-
-.subtitle {
-  color: var(--text-secondary);
-  margin-top: var(--space-1);
-}
 
 /* Unified Liquid Glass Chamber — Uniting Timer and Study Session */
 .unifiedChamber {
@@ -54,6 +40,8 @@
   gap: var(--space-6);
   padding-right: var(--space-6);
   border-right: 1px solid var(--glass-border);
+  min-width: 0;
+  width: 100%;
 }
 
 @media (max-width: 960px) {
@@ -70,8 +58,9 @@
 /* Circular Timer Dial */
 .timerWrapper {
   position: relative;
-  width: 300px;
-  height: 300px;
+  width: clamp(240px, 75vw, 300px);
+  height: clamp(240px, 75vw, 300px);
+  max-width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -133,7 +122,7 @@
 }
 
 .time {
-  font-size: 4.25rem;
+  font-size: clamp(3rem, 13vw, 4.25rem);
   font-weight: 300;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
@@ -141,18 +130,194 @@
   line-height: 1;
 }
 
-/* Interval Tracker (• — ◯ — • from Dribbble design) */
+/* Clickable Time Display & Inline Edit */
+.timeDisplayTrigger {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  border-radius: var(--radius-lg);
+  padding: 2px 10px;
+  transition: all var(--transition-fast);
+  background: transparent;
+  border: none;
+}
+
+.timeDisplayTrigger:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+:global([data-theme="light"]) .timeDisplayTrigger:hover {
+  background: rgba(102, 65, 255, 0.06);
+}
+
+.timeHint {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  opacity: 0;
+  transform: translateY(-2px);
+  transition: all var(--transition-fast);
+  margin-top: 2px;
+  font-weight: 600;
+}
+
+.timeDisplayTrigger:hover .timeHint {
+  opacity: 0.85;
+  transform: translateY(0);
+}
+
+.timeEditBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: fadeIn var(--transition-fast) ease;
+}
+
+.timeInputRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(14, 10, 26, 0.9);
+  border: 1px solid rgba(102, 65, 255, 0.45);
+  border-radius: var(--radius-full);
+  padding: 4px 8px;
+  box-shadow: 0 0 16px rgba(102, 65, 255, 0.28);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+:global([data-theme="light"]) .timeInputRow {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(102, 65, 255, 0.35);
+  box-shadow: 0 4px 16px rgba(102, 65, 255, 0.15);
+}
+
+.timeInput {
+  width: 64px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 1.6rem;
+  font-weight: 700;
+  text-align: center;
+  outline: none;
+  font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield;
+}
+
+.timeInput::-webkit-outer-spin-button,
+.timeInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.timeInputUnit {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  margin-right: 2px;
+}
+
+.timeActionBtn {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: none;
+}
+
+.timeConfirmBtn {
+  background: #6641ff;
+  color: #ffffff;
+}
+
+.timeConfirmBtn:hover {
+  background: #7c4dff;
+  transform: scale(1.08);
+}
+
+.timeCancelBtn {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+}
+
+.timeCancelBtn:hover {
+  background: rgba(239, 68, 68, 0.25);
+  color: #ef4444;
+}
+
+.timeQuickPresets {
+  display: flex;
+  gap: 6px;
+}
+
+.timeQuickChip {
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.timeQuickChip:hover {
+  background: rgba(102, 65, 255, 0.28);
+  border-color: rgba(102, 65, 255, 0.5);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+:global([data-theme="light"]) .timeQuickChip {
+  background: rgba(102, 65, 255, 0.08);
+  border-color: rgba(102, 65, 255, 0.2);
+  color: #4322c9;
+}
+
+:global([data-theme="light"]) .timeQuickChip:hover {
+  background: rgba(102, 65, 255, 0.18);
+  color: #2a108a;
+}
+
+/* Interval Tracker (• — ◯ — •) — Smooth Animated Cycle Progress */
 .intervalTrack {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0;
+  min-width: 140px;
+  max-width: 260px;
+  height: 26px;
   margin-top: calc(var(--space-2) * -1);
+  user-select: none;
 }
 
-.intervalNodeWrapper {
+.intervalStep {
   display: flex;
   align-items: center;
+  flex: 0 1 auto;
+  min-width: 0;
+  animation: cycleStepPopIn 0.32s cubic-bezier(0.34, 1.45, 0.64, 1) forwards;
+  transform-origin: left center;
+}
+
+.intervalNodeAnchor {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
 }
 
 .intervalNode {
@@ -161,13 +326,16 @@
   border-radius: 50%;
   background: var(--text-tertiary);
   opacity: 0.35;
-  transition: all var(--transition-fast);
+  flex-shrink: 0;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .intervalCompleted {
+  width: 8px;
+  height: 8px;
   background: #6641ff;
   opacity: 1;
-  box-shadow: 0 0 6px rgba(102, 65, 255, 0.4);
+  box-shadow: 0 0 6px rgba(102, 65, 255, 0.45);
 }
 
 .intervalCurrent {
@@ -175,21 +343,67 @@
   height: 14px;
   border-radius: 50%;
   background: transparent;
-  border: 2.5px solid #6641ff;
+  border: 2px solid #6641ff;
   opacity: 1;
-  box-shadow: 0 0 10px rgba(102, 65, 255, 0.5);
+  flex-shrink: 0;
+  box-shadow: 0 0 10px rgba(102, 65, 255, 0.55);
+  animation: pulseCurrentCycle 2.4s infinite ease-in-out;
 }
 
 .intervalConnector {
-  width: 22px;
+  flex: 1 1 auto;
+  min-width: 6px;
+  max-width: 22px;
+  width: 18px;
   height: 2px;
   background: var(--border-default);
-  margin: 0 4px;
+  margin: 0 3px;
   border-radius: 1px;
+  animation: cycleConnectorGrow 0.28s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  transform-origin: left center;
+  transition: background-color 0.25s ease-out;
 }
 
 .intervalConnectorActive {
   background: #6641ff;
+  box-shadow: 0 0 4px rgba(102, 65, 255, 0.35);
+}
+
+@keyframes cycleStepPopIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.35);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes cycleConnectorGrow {
+  0% {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes pulseCurrentCycle {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 8px rgba(102, 65, 255, 0.45);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 0 14px rgba(102, 65, 255, 0.70);
+  }
 }
 
 /* Controls */
@@ -493,6 +707,7 @@
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.01em;
+  white-space: nowrap;
 }
 
 :global([data-theme="light"]) .configLabel {
@@ -508,9 +723,6 @@
   color: #34d399;
 }
 
-.configIconLongBreak {
-  color: #a78bfa;
-}
 
 .configIconCycles {
   color: #38bdf8;
@@ -524,9 +736,6 @@
   color: #059669;
 }
 
-:global([data-theme="light"]) .configIconLongBreak {
-  color: #6d42e0;
-}
 
 :global([data-theme="light"]) .configIconCycles {
   color: #0284c7;
@@ -545,6 +754,7 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   transition: all var(--transition-fast);
+  flex-shrink: 0;
 }
 
 :global([data-theme="light"]) .stepperBox {
@@ -598,13 +808,15 @@
 }
 
 .stepperValueDisplay {
-  min-width: 54px;
+  min-width: 68px;
+  width: 68px;
   text-align: center;
   display: flex;
   align-items: baseline;
   justify-content: center;
   gap: 3px;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   user-select: none;
   padding: 0 2px;
 }
@@ -630,6 +842,126 @@
 :global([data-theme="light"]) .stepperUnit {
   color: #554877;
   font-weight: 600;
+}
+
+/* Multi Stepper Component (-1 | -5 min | tempo | +1 | +5 min) */
+.stepperBoxMulti {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(14, 10, 26, 0.70);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: var(--radius-full);
+  padding: 3px 4px;
+  gap: 3px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.40), 0 2px 6px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+:global([data-theme="light"]) .stepperBoxMulti {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(102, 65, 255, 0.26);
+  box-shadow: inset 0 1px 1px #ffffff, 0 3px 10px rgba(102, 65, 255, 0.10);
+}
+
+.stepperBtnSmall {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  transition: all var(--transition-fast);
+  user-select: none;
+  padding: 0;
+}
+
+.stepperBtnSmall:hover:not(:disabled) {
+  background: rgba(124, 77, 255, 0.32);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(102, 65, 255, 0.40);
+  transform: scale(1.06);
+}
+
+.stepperBtnSmall:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.stepperBtnSmall:disabled {
+  opacity: 0.30;
+  cursor: not-allowed;
+}
+
+:global([data-theme="light"]) .stepperBtnSmall {
+  background: rgba(102, 65, 255, 0.08);
+  border: 1px solid rgba(102, 65, 255, 0.15);
+  color: #4322c9;
+}
+
+:global([data-theme="light"]) .stepperBtnSmall:hover:not(:disabled) {
+  background: rgba(102, 65, 255, 0.18);
+  border-color: rgba(102, 65, 255, 0.35);
+  color: #2e129e;
+  box-shadow: 0 0 10px rgba(102, 65, 255, 0.25);
+}
+
+.stepperBtnMedium {
+  height: 24px;
+  padding: 0 7px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+
+.stepperBtnMedium:hover:not(:disabled) {
+  background: rgba(124, 77, 255, 0.34);
+  border-color: rgba(255, 255, 255, 0.30);
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(102, 65, 255, 0.40);
+  transform: scale(1.05);
+}
+
+.stepperBtnMedium:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.stepperBtnMedium:disabled {
+  opacity: 0.30;
+  cursor: not-allowed;
+}
+
+:global([data-theme="light"]) .stepperBtnMedium {
+  background: rgba(102, 65, 255, 0.09);
+  border: 1px solid rgba(102, 65, 255, 0.16);
+  color: #4322c9;
+}
+
+:global([data-theme="light"]) .stepperBtnMedium:hover:not(:disabled) {
+  background: rgba(102, 65, 255, 0.20);
+  border-color: rgba(102, 65, 255, 0.38);
+  color: #2e129e;
+  box-shadow: 0 0 10px rgba(102, 65, 255, 0.25);
 }
 
 /* Preset Chips Row — Frosted Liquid Glass Pills */
@@ -850,4 +1182,59 @@
   border-color: rgba(239, 68, 68, 0.50);
   box-shadow: 0 4px 14px rgba(239, 68, 68, 0.30);
 }
+
+/* === Responsive Breakpoints for Pomodoro === */
+@media (max-width: 640px) {
+  .unifiedChamber {
+    padding: var(--space-4);
+    gap: var(--space-4);
+    border-radius: var(--radius-xl);
+  }
+
+  .timerSection,
+  .timerColumn {
+    padding-bottom: var(--space-4);
+    gap: var(--space-4);
+  }
+
+  .primaryActionBtn {
+    padding: 12px 28px;
+    font-size: var(--font-size-base);
+  }
+
+  .configGroup {
+    padding: 12px 14px;
+    border-radius: var(--radius-lg);
+  }
+
+  .stepperBox {
+    padding: 2px 3px;
+  }
+
+  .stepperBtn {
+    width: 24px;
+    height: 24px;
+  }
+
+  .stepperValueDisplay {
+    min-width: 58px;
+    width: 58px;
+  }
+
+  .stepperNum {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 420px) {
+  .unifiedChamber {
+    padding: 14px 10px;
+  }
+
+  .configGroupHeader {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+}
+
 
