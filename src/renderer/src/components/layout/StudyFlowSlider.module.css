@@ -1,0 +1,294 @@
+/* StudyFlow Lateral Slider Container */
+.sliderWrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Top Menu Bar — Liquid Glass Floating Control */
+.topBarContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 150px 10px 24px;
+  z-index: 30;
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+  -webkit-app-region: drag;
+  gap: var(--space-3);
+}
+
+.topBarBrand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  -webkit-app-region: no-drag;
+  user-select: none;
+}
+
+.brandLogo {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 2px 10px rgba(102, 65, 255, 0.4);
+}
+
+.brandTitle {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #ffffff 0%, #c4b5fd 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+:global([data-theme="light"]) .brandTitle {
+  background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+
+.themeToggleBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: var(--glass-surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-bevel), var(--shadow-sm);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  -webkit-app-region: no-drag;
+}
+
+.themeToggleBtn:hover {
+  background: var(--glass-surface-hover);
+  color: #f59e0b;
+  border-color: var(--glass-border-light);
+  box-shadow: var(--glass-bevel-intense), var(--shadow-md), 0 0 14px rgba(245, 158, 11, 0.25);
+  transform: scale(1.1);
+}
+
+:global([data-theme="light"]) .themeToggleBtn:hover {
+  color: #6366f1;
+  box-shadow: var(--glass-bevel-intense), var(--shadow-md), 0 0 14px rgba(99, 102, 241, 0.25);
+}
+
+.themeToggleBtn:active {
+  transform: scale(0.95);
+}
+
+.flowPills {
+  display: inline-flex;
+  align-items: center;
+  background: var(--glass-surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-bevel), var(--glass-shadow);
+  border-radius: var(--radius-full);
+  padding: 4px 6px;
+  gap: 4px;
+  position: relative;
+  -webkit-app-region: no-drag;
+  flex-shrink: 0;
+}
+
+.pillBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-tertiary);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  user-select: none;
+}
+
+.pillBtn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.pillBtnActive {
+  background: var(--glass-surface-active);
+  color: #ffffff;
+  border-color: var(--glass-border-light);
+  box-shadow: var(--glass-bevel-intense), 0 4px 12px rgba(102, 65, 255, 0.3);
+}
+
+:global([data-theme="light"]) .pillBtnActive {
+  background: rgba(102, 65, 255, 0.12);
+  color: var(--primary-600);
+  border-color: rgba(102, 65, 255, 0.3);
+}
+
+.pillConnector {
+  width: 12px;
+  height: 2px;
+  background: var(--border-subtle);
+  border-radius: var(--radius-full);
+  margin: 0 -1px;
+  transition: background var(--transition-normal);
+}
+
+.pillConnectorActive {
+  background: var(--primary-500);
+}
+
+/* Viewport for horizontal track */
+.sliderViewport {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+/* 3-Screen Carousel Track */
+.sliderTrack {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+/* Individual Slide Pane */
+.slidePane {
+  flex: 0 0 100%;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--space-2) var(--space-8) var(--space-12);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: safe center;
+}
+
+.slidePane > * {
+  flex-shrink: 0;
+}
+
+/* Floating Liquid Glass Lateral Navigation Arrows */
+.arrowBtn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 46px;
+  height: 46px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--glass-surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-bevel), var(--glass-shadow), 0 8px 24px rgba(0, 0, 0, 0.3);
+  color: var(--text-secondary);
+  cursor: pointer;
+  z-index: 40;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.arrowBtn:hover {
+  color: #ffffff;
+  border-color: var(--primary-400);
+  background: var(--glass-surface-hover);
+  box-shadow: var(--glass-bevel-intense), 0 0 20px rgba(102, 65, 255, 0.4), 0 12px 28px rgba(0, 0, 0, 0.4);
+  transform: translateY(-50%) scale(1.1);
+}
+
+:global([data-theme="light"]) .arrowBtn:hover {
+  color: var(--primary-600);
+}
+
+.arrowBtn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.arrowPrev {
+  left: var(--space-4);
+}
+
+.arrowNext {
+  right: var(--space-4);
+}
+
+.arrowTooltip {
+  position: absolute;
+  top: 100%;
+  padding: 4px 10px;
+  border-radius: var(--radius-md);
+  background: rgba(18, 14, 28, 0.92);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(12px);
+  color: var(--text-primary);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: all var(--transition-fast);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  z-index: 50;
+}
+
+:global([data-theme="light"]) .arrowTooltip {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.arrowPrev .arrowTooltip {
+  left: 0;
+}
+
+.arrowNext .arrowTooltip {
+  right: 0;
+}
+
+.arrowBtn:hover .arrowTooltip {
+  opacity: 1;
+  transform: translateY(8px);
+}
+
+@media (max-width: 768px) {
+  .slidePane {
+    padding: var(--space-2) var(--space-4) var(--space-8);
+  }
+
+  .arrowBtn {
+    width: 38px;
+    height: 38px;
+  }
+
+  .arrowPrev {
+    left: var(--space-2);
+  }
+
+  .arrowNext {
+    right: var(--space-2);
+  }
+}

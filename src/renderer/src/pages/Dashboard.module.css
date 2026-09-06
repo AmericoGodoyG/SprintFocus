@@ -1,0 +1,549 @@
+.dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: var(--space-8);
+  animation: fadeIn 0.25s ease-out;
+}
+
+/* 1. Header: Minimalist and Inspiring */
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.15;
+}
+
+.subtitle {
+  color: var(--text-tertiary);
+  margin: 4px 0 0 0;
+  font-size: var(--font-size-sm);
+  letter-spacing: -0.01em;
+  font-style: italic;
+}
+
+.pomodoroLinkBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, rgba(124, 77, 255, 0.92) 0%, rgba(102, 65, 255, 0.80) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  color: #ffffff;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.45), 0 8px 24px rgba(102, 65, 255, 0.42);
+  transition: all var(--transition-fast);
+}
+
+.pomodoroLinkBtn:hover {
+  background: linear-gradient(135deg, rgba(138, 96, 255, 0.98) 0%, rgba(115, 80, 255, 0.90) 100%);
+  border-color: rgba(255, 255, 255, 0.55);
+  box-shadow: inset 0 1px 2px #ffffff, 0 10px 32px rgba(102, 65, 255, 0.60);
+  transform: translateY(-1.5px);
+}
+
+/* Success Toast Banner */
+.successBanner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(16, 185, 129, 0.12);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid rgba(16, 185, 129, 0.30);
+  box-shadow: var(--glass-bevel), var(--shadow-sm);
+  border-radius: var(--radius-lg);
+  padding: 10px 16px;
+  color: #10b981;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  margin-bottom: var(--space-4);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.sparkleIcon {
+  color: #10b981;
+}
+
+/* 2. Four Discreet Key Metric Cards */
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+@media (max-width: 960px) {
+  .metricsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.metricCard {
+  background: var(--glass-surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow-sm);
+  border-radius: var(--radius-xl);
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+
+.metricCard:hover {
+  background: var(--glass-surface-hover);
+  border-color: var(--glass-border-light);
+  box-shadow: var(--glass-bevel-intense), var(--glass-shadow);
+  transform: translateY(-2.5px);
+}
+
+.metricCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-2);
+}
+
+.metricLabel {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.metricIcon {
+  color: var(--text-tertiary);
+  opacity: 0.75;
+}
+
+.metricValue {
+  font-size: 27px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+
+.metricSubtext {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.trendPositive {
+  color: #10b981;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 600;
+}
+
+.trendNegative {
+  color: #f59e0b;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 600;
+}
+
+/* 3. Main Chart Card: Mountain & Evolution Trail */
+.chartCard {
+  background: var(--glass-surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-6);
+  box-shadow: var(--glass-shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.chartCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.chartCardTitle {
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.chartCardSubtitle {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  margin: 3px 0 0 0;
+  font-weight: 500;
+}
+
+.chartControlsRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+/* Difference vs Average Badge */
+.diffBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 14px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.diffBadgePositive {
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(16, 185, 129, 0.32);
+  color: #10b981;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.diffBadgeNegative {
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.32);
+  color: #f59e0b;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.diffBadgeNeutral {
+  background: rgba(102, 65, 255, 0.14);
+  border: 1px solid rgba(102, 65, 255, 0.32);
+  color: var(--primary-400);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Period Filters Group */
+.periodFilterGroup {
+  display: inline-flex;
+  background: var(--glass-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  border-radius: var(--radius-full);
+  padding: 3px;
+  gap: 3px;
+}
+
+.periodBtn {
+  padding: 5px 14px;
+  border-radius: var(--radius-full);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.periodBtn:hover {
+  color: var(--text-primary);
+}
+
+.periodBtnActive {
+  background: var(--glass-surface-active);
+  color: #ffffff;
+  border-color: var(--glass-border-light);
+  box-shadow: var(--glass-bevel), 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+:global([data-theme="light"]) .periodBtnActive {
+  color: var(--primary-600);
+}
+
+/* SVG Chart Canvas */
+.svgWrapper {
+  position: relative;
+  width: 100%;
+  height: 360px;
+  margin-top: var(--space-2);
+}
+
+.mountainSvg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  display: block;
+}
+
+/* Mountain Silhouettes */
+.distantMountain {
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.midMountain {
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+/* Grid & Axes */
+.gridLine {
+  stroke: var(--border-subtle);
+  stroke-dasharray: 4 4;
+  stroke-width: 1;
+}
+
+.baseLine {
+  stroke: var(--border-default);
+  stroke-width: 1.5;
+}
+
+.yAxisText {
+  font-size: 11px;
+  fill: var(--text-tertiary);
+  font-weight: 500;
+  font-family: inherit;
+}
+
+.xAxisText {
+  font-size: 11px;
+  fill: var(--text-tertiary);
+  font-weight: 500;
+  font-family: inherit;
+  transition: fill 0.15s ease;
+}
+
+.xAxisTextActive {
+  fill: var(--primary-400);
+  font-weight: 700;
+}
+
+/* Period Average Line (Secondary Line) */
+.averageLineGroup {
+  pointer-events: none;
+}
+
+.averageLine {
+  stroke: var(--text-tertiary);
+  stroke-dasharray: 5 5;
+  stroke-width: 1.5;
+  opacity: 0.65;
+}
+
+.averageTagBg {
+  fill: var(--bg-card);
+  stroke: var(--border-default);
+  stroke-width: 1;
+}
+
+.averageTagText {
+  font-size: 10px;
+  fill: var(--text-secondary);
+  font-weight: 600;
+  font-family: inherit;
+}
+
+/* Evolution Trail */
+.trailArea {
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.trailPath {
+  fill: none;
+  stroke: var(--primary-500);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+/* Waypoints on the Trail */
+.pointGroup {
+  cursor: pointer;
+}
+
+.hitArea {
+  pointer-events: all;
+}
+
+.waypointDot {
+  fill: var(--bg-card);
+  stroke: var(--primary-500);
+  stroke-width: 2.5;
+  transition: all 0.15s ease-out;
+}
+
+.summitDot {
+  stroke: #f59e0b;
+  fill: #f59e0b;
+}
+
+.latestDot {
+  stroke: var(--primary-400);
+  fill: var(--primary-400);
+}
+
+.hoveredDot {
+  stroke-width: 3.5;
+  fill: #ffffff;
+  filter: drop-shadow(0 0 8px var(--primary-500));
+}
+
+
+
+.hoverVerticalLine {
+  stroke: var(--primary-400);
+  stroke-dasharray: 3 3;
+  stroke-width: 1;
+  opacity: 0.5;
+}
+
+/* Floating Interactive Tooltip */
+.floatingTooltip {
+  position: absolute;
+  transform: translate(-50%, -110%);
+  background: var(--bg-tooltip);
+  backdrop-filter: var(--glass-blur-heavy);
+  -webkit-backdrop-filter: var(--glass-blur-heavy);
+  border: 1px solid var(--glass-border-light);
+  border-radius: var(--radius-xl);
+  padding: 12px 16px;
+  box-shadow: var(--glass-bevel), var(--shadow-lg);
+  pointer-events: none;
+  z-index: 10;
+  min-width: 190px;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.tooltipHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--glass-border);
+  padding-bottom: 4px;
+}
+
+.tooltipDate {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.tooltipDayName {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  text-transform: capitalize;
+}
+
+.tooltipTimeRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.tooltipTimeIcon {
+  color: var(--primary-400);
+}
+
+.tooltipTimeVal {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.tooltipDiffRow {
+  font-size: 10px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.tooltipPositive {
+  color: #10b981;
+}
+
+.tooltipNegative {
+  color: #f59e0b;
+}
+
+.tooltipSummitBadge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: #f59e0b;
+  font-weight: 700;
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--glass-border);
+}
+
+/* 4. Automated Discrete Insight */
+.insightBox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--glass-surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-bevel), var(--glass-shadow-sm);
+  border-radius: var(--radius-xl);
+  padding: 14px 18px;
+  margin-top: var(--space-5);
+}
+
+.insightIconWrap {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-md);
+  background: rgba(102, 65, 255, 0.18);
+  border: 1px solid var(--glass-border);
+  color: var(--primary-300);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 0 12px rgba(102, 65, 255, 0.3);
+}
+
+.insightText {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+  font-weight: 500;
+}
+
+

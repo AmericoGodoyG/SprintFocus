@@ -1,0 +1,75 @@
+{
+  "name": "sprintfocus",
+  "version": "1.0.0",
+  "description": "SprintFocus — Ambiente pessoal de estudos com Pomodoro, Flash Cards e IA",
+  "main": "./out/main/index.js",
+  "author": "SprintFocus",
+  "license": "MIT",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "postinstall": "node -e \"const { execSync } = require('child_process'); execSync('npx prebuild-install --runtime electron --target 33.2.0', { cwd: './node_modules/better-sqlite3', stdio: 'inherit' });\"",
+    "dist": "electron-vite build && electron-builder --win --config",
+    "dist:dir": "electron-vite build && electron-builder --win --dir --config",
+    "test:e2e": "electron scripts/e2e_test.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.7.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.0",
+    "recharts": "^2.15.0",
+    "lucide-react": "^0.460.0",
+    "zustand": "^5.0.0",
+    "@google/generative-ai": "^0.21.0",
+    "openai": "^4.73.0",
+    "pdfjs-dist": "^4.8.69"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-vite": "^2.3.0",
+    "electron-builder": "^25.1.8",
+    "@electron/rebuild": "^3.7.1",
+    "typescript": "^5.6.3",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@types/better-sqlite3": "^7.6.12",
+    "vite": "^5.4.11",
+    "@vitejs/plugin-react": "^4.3.4"
+  },
+  "build": {
+    "appId": "com.sprintfocus.app",
+    "productName": "SprintFocus",
+    "directories": {
+      "buildResources": "build",
+      "output": "release"
+    },
+    "files": [
+      "out/**/*",
+      "!node_modules"
+    ],
+    "asarUnpack": [
+      "node_modules/better-sqlite3/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "SprintFocus"
+    }
+  }
+}
