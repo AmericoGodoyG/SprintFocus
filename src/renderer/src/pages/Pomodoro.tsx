@@ -56,6 +56,8 @@ function Pomodoro() {
 
   // Finish Timer Confirmation Modal State
   const [showFinishConfirmModal, setShowFinishConfirmModal] = useState(false)
+  // Reset Timer Confirmation Modal State
+  const [showResetConfirmModal, setShowResetConfirmModal] = useState(false)
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
@@ -279,6 +281,11 @@ function Pomodoro() {
     }
   }
 
+  function handleResetTimerConfirm() {
+    setShowResetConfirmModal(false)
+    resetTimer()
+  }
+
   // Skip
   function skipSession() {
     setIsRunning(false)
@@ -461,14 +468,45 @@ function Pomodoro() {
 
           {/* Controls with Glowing Play Button */}
           <div className={styles.controls}>
-            <button
-              type="button"
-              className={styles.controlBtn}
-              onClick={resetTimer}
-              title="Reiniciar timer"
-            >
-              <RotateCcw size={18} />
-            </button>
+            <div className={styles.finishBtnWrapper}>
+              {showResetConfirmModal && (
+                <div className={styles.finishPopup}>
+                  <button
+                    type="button"
+                    className={`${styles.finishPopupBtn} ${styles.finishPopupConfirm}`}
+                    onClick={handleResetTimerConfirm}
+                    title="Confirmar reinício"
+                    aria-label="Confirmar reinício"
+                    data-testid="btn-confirm-reset"
+                  >
+                    <Check size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.finishPopupBtn} ${styles.finishPopupCancel}`}
+                    onClick={() => setShowResetConfirmModal(false)}
+                    title="Cancelar"
+                    aria-label="Cancelar reinício"
+                    data-testid="btn-cancel-reset"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              )}
+              <button
+                type="button"
+                className={styles.controlBtn}
+                onClick={() => {
+                  setShowFinishConfirmModal(false)
+                  setShowResetConfirmModal(prev => !prev)
+                }}
+                title="Reiniciar timer"
+                aria-label="Reiniciar timer"
+                data-testid="btn-reset-timer"
+              >
+                <RotateCcw size={18} />
+              </button>
+            </div>
 
             <button
               type="button"
@@ -515,7 +553,10 @@ function Pomodoro() {
               <button
                 type="button"
                 className={`${styles.controlBtn} ${styles.finishTimerBtn}`}
-                onClick={() => setShowFinishConfirmModal(true)}
+                onClick={() => {
+                  setShowResetConfirmModal(false)
+                  setShowFinishConfirmModal(prev => !prev)
+                }}
                 title="Finalizar timer"
                 aria-label="Finalizar timer"
               >

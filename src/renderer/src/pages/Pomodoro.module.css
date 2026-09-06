@@ -741,3 +741,13 @@
   transform: scale(0.95);
 }
 
+:global([data-theme="light"]) .finishPopup {
+  background: rgba(255, 255, 255, 0.96);
+  border-color: rgba(102, 65, 255, 0.28);
+  box-shadow: 0 8px 24px rgba(102, 65, 255, 0.16), inset 0 1px 1px #ffffff;
+}
+
+:global([data-theme="light"]) .finishPopup::after {
+  border-top-color: rgba(102, 65, 255, 0.28);
+}
+
