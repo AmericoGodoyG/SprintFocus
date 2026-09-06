@@ -112,10 +112,11 @@ function Metrics() {
       const yestStart = new Date(yestDate.getFullYear(), yestDate.getMonth(), yestDate.getDate()).toISOString()
       const yestEnd = new Date(yestDate.getFullYear(), yestDate.getMonth(), yestDate.getDate(), 23, 59, 59).toISOString()
 
-      // 3. Esta Semana (segunda-feira como início)
-      const dayOfWeek = (now.getDay() + 6) % 7 // 0 = seg, 6 = dom
+      // 3. Esta Semana (domingo como dia inicial da semana)
+      const dayOfWeek = now.getDay() // 0 = dom, 1 = seg, ..., 6 = sáb
       const thisWeekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek)
-      const thisWeekEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59)
+      thisWeekStart.setHours(0, 0, 0, 0)
+      const thisWeekEnd = new Date(thisWeekStart.getFullYear(), thisWeekStart.getMonth(), thisWeekStart.getDate() + 6, 23, 59, 59)
 
       // 4. Semana Anterior
       const prevWeekStart = new Date(thisWeekStart.getTime() - 7 * 86400000)
@@ -127,17 +128,23 @@ function Metrics() {
 
       // 6. Período Selecionado
       let periodStartDate: Date
+      let periodEndDate: Date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59)
       if (period === '7d') {
-        periodStartDate = new Date(now.getTime() - 6 * 86400000)
+        const sunday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay())
+        sunday.setHours(0, 0, 0, 0)
+        periodStartDate = sunday
+        periodEndDate = new Date(sunday.getFullYear(), sunday.getMonth(), sunday.getDate() + 6, 23, 59, 59)
       } else if (period === '30d') {
         periodStartDate = new Date(now.getTime() - 29 * 86400000)
+        periodStartDate.setHours(0, 0, 0, 0)
       } else if (period === '90d') {
         periodStartDate = new Date(now.getTime() - 89 * 86400000)
+        periodStartDate.setHours(0, 0, 0, 0)
       } else {
         // 1y
         periodStartDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate())
+        periodStartDate.setHours(0, 0, 0, 0)
       }
-      periodStartDate.setHours(0, 0, 0, 0)
 
       const [
         todayStats,
@@ -152,7 +159,7 @@ function Metrics() {
         api.getSessionStats(thisWeekStart.toISOString(), thisWeekEnd.toISOString()),
         api.getSessionStats(prevWeekStart.toISOString(), prevWeekEnd.toISOString()),
         api.getSessionStats(thisMonthStart.toISOString(), thisMonthEnd.toISOString()),
-        api.getDailyStudyData(periodStartDate.toISOString(), todayEnd)
+        api.getDailyStudyData(periodStartDate.toISOString(), periodEndDate.toISOString())
       ])
 
       setTodayMinutes(todayStats?.total_minutes || 0)
@@ -176,16 +183,18 @@ function Metrics() {
       const weekdayShorts = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 
       if (period === '7d') {
-        for (let i = 6; i >= 0; i--) {
-          const d = new Date(now.getTime() - i * 86400000)
-          const dateStr = d.toISOString().slice(0, 10)
+        const sunday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay())
+        for (let i = 0; i < 7; i++) {
+          const d = new Date(sunday.getFullYear(), sunday.getMonth(), sunday.getDate() + i)
+          const year = d.getFullYear()
+          const month = String(d.getMonth() + 1).padStart(2, '0')
+          const day = String(d.getDate()).padStart(2, '0')
+          const dateStr = `${year}-${month}-${day}`
           const mins = dailyMap[dateStr] || 0
-          const dayNum = String(d.getDate()).padStart(2, '0')
-          const monthNum = String(d.getMonth() + 1).padStart(2, '0')
           points.push({
             dateStr,
             label: weekdayShorts[d.getDay()],
-            fullDate: `${dayNum}/${monthNum}/${d.getFullYear()}`,
+            fullDate: `${day}/${month}/${year}`,
             weekdayName: weekdayNames[d.getDay()],
             minutes: mins,
             hoursFormatted: formatMinutesToHours(mins)
