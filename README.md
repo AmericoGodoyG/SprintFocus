@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="src/renderer/src/assets/icon.png" width="120" alt="StudyFlow Logo" />
+  <img src="src/renderer/src/assets/icon.png" width="120" alt="SprintFocus Logo" />
 </p>
 
-<h1 align="center">📚 StudyFlow</h1>
+<h1 align="center">📚 SprintFocus</h1>
 
 <p align="center">
   <strong>Ambiente pessoal de estudos com Pomodoro, Flash Cards e Inteligência Artificial</strong>
@@ -20,7 +20,7 @@
 
 ## 📖 Sobre o Projeto
 
-**StudyFlow** é uma aplicação desktop construída com Electron que oferece um ambiente completo e integrado para estudos. Combina um timer Pomodoro configurável, sistema de flash cards com repetição espaçada, leitura e sumarização de PDFs com IA, métricas detalhadas de progresso e calendário de sessões — tudo em uma interface moderna com tema escuro.
+**SprintFocus** é uma aplicação desktop construída com Electron que oferece um ambiente completo e integrado para estudos. Combina um timer Pomodoro configurável, sistema de foco e pausas, métricas detalhadas de evolução e calendário de sessões — tudo em uma interface moderna com tema escuro e claro.
 
 ---
 
@@ -57,7 +57,6 @@
 | [TypeScript](https://www.typescriptlang.org/) | 5.6.3 | Tipagem estática |
 | [React Router DOM](https://reactrouter.com/) | 6.28.0 | Roteamento SPA |
 | [Zustand](https://zustand-demo.pmnd.rs/) | 5.0.0 | Gerenciamento de estado |
-| [Recharts](https://recharts.org/) | 2.15.0 | Gráficos e visualização de dados |
 | [Lucide React](https://lucide.dev/) | 0.460.0 | Biblioteca de ícones |
 | CSS Modules | — | Estilização com escopo por componente |
 
@@ -211,9 +210,7 @@ AppPomodoro/
 │               ├── Metrics.tsx     # Página de métricas
 │               ├── Metrics.module.css
 │               ├── Calendar.tsx    # Página de calendário
-│               ├── Calendar.module.css
-│               ├── Dashboard.tsx   # Dashboard
-│               └── Dashboard.module.css
+│               └── Calendar.module.css
 ├── electron.vite.config.ts         # Configuração do electron-vite
 ├── tsconfig.json                   # Config TypeScript raiz
 ├── tsconfig.node.json              # Config TS para main/preload
@@ -254,7 +251,7 @@ npm run dev
 Isso abre a aplicação Electron com:
 - **Hot Module Replacement (HMR)** no renderer
 - **DevTools** disponível
-- Banco de dados SQLite criado automaticamente em `%APPDATA%/studyflow/studyflow.db`
+- Banco de dados SQLite criado automaticamente em `%APPDATA%/sprintfocus/sprintfocus.db`
 
 ### Build de Produção
 

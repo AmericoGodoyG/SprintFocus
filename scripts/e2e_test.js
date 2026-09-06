@@ -220,7 +220,7 @@ app.whenReady().then(async () => {
 
     // 5. Sidebar Logo Image Verification
     const sidebarLogoOk = await exec(`(() => {
-      const img = document.querySelector('img[alt*="StudyFlow Logo"]');
+      const img = document.querySelector('img[alt*="SprintFocus Logo"]');
       return img && img.complete && img.naturalWidth > 0;
     })()`);
     recordTest('Dashboard Montanha', 'Logo com ícone atualizado no Menu Superior', Boolean(sidebarLogoOk));

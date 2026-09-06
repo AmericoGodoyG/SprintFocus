@@ -181,7 +181,7 @@ function Pomodoro() {
         short_break: 'Pausa terminada. Vamos estudar? 📚',
         long_break: 'Pausa longa terminada. Vamos estudar? 📚'
       }
-      await getApi().showNotification('StudyFlow', messages[sessionType])
+      await getApi().showNotification('SprintFocus', messages[sessionType])
     }
 
     // Save study session
@@ -301,7 +301,7 @@ function Pomodoro() {
     playSound()
 
     if (settings.notificationsEnabled) {
-      await getApi().showNotification('StudyFlow', 'Ciclo de foco finalizado com sucesso! 🎉')
+      await getApi().showNotification('SprintFocus', 'Ciclo de foco finalizado com sucesso! 🎉')
     }
 
     const now = new Date()
