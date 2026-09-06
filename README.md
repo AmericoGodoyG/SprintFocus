@@ -18,6 +18,7 @@
 </p>
 
 ---
+DOWNLOAD: link
 
 ## 📖 Sobre o Projeto
 
