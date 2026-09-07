@@ -13,6 +13,7 @@ dist-ssr
 *.local
 out
 release
+electron.vite.config.*.mjs
 
 # Editor directories and files
 .vscode/*

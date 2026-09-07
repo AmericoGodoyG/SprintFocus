@@ -70,23 +70,6 @@ function Calendar() {
   })
   const [loading, setLoading] = useState(true)
 
-  // One-time cleanup of legacy mock tasks previously saved in localStorage
-  useEffect(() => {
-    try {
-      const keysToRemove: string[] = []
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i)
-        if (k && k.startsWith('sprintfocus_todos_')) {
-          const val = localStorage.getItem(k)
-          if (val && (val.includes('Search for inspirations') || val.includes('ChecK Email'))) {
-            keysToRemove.push(k)
-          }
-        }
-      }
-      keysToRemove.forEach(k => localStorage.removeItem(k))
-    } catch {}
-  }, [])
-
   // Fetch sessions for the displayed month
   useEffect(() => {
     loadMonthSessions()
@@ -245,20 +228,13 @@ function Calendar() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved)
-        const isLegacyMock = Array.isArray(parsed) && parsed.some(
-          (t: any) => t.text === 'Search for inspirations' || t.text === 'ChecK Email'
-        )
-        if (!isLegacyMock && Array.isArray(parsed)) {
+        if (Array.isArray(parsed)) {
           setTodos(parsed)
           return
         }
-      } catch { }
+      } catch {}
     }
-    // Days start empty without fake tasks or progress
     setTodos([])
-    if (saved) {
-      localStorage.removeItem(storageKey)
-    }
   }, [selectedKey])
 
   function handleToggleTodo(id: string) {

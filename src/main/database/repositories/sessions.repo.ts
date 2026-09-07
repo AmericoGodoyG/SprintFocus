@@ -54,23 +54,19 @@ export function finishSession(id: number, finishedAt: string, actualMinutes: num
 export function getSessionById(id: number): StudySession | undefined {
   const db = getDatabase()
   return db.prepare(`
-    SELECT ss.*, s.name as subject_name, s.color as subject_color, t.name as topic_name
-    FROM study_sessions ss
-    LEFT JOIN subjects s ON ss.subject_id = s.id
-    LEFT JOIN topics t ON ss.topic_id = t.id
-    WHERE ss.id = ?
+    SELECT *
+    FROM study_sessions
+    WHERE id = ?
   `).get(id) as StudySession | undefined
 }
 
 export function getSessionsByDateRange(startDate: string, endDate: string): StudySession[] {
   const db = getDatabase()
   return db.prepare(`
-    SELECT ss.*, s.name as subject_name, s.color as subject_color, t.name as topic_name
-    FROM study_sessions ss
-    LEFT JOIN subjects s ON ss.subject_id = s.id
-    LEFT JOIN topics t ON ss.topic_id = t.id
-    WHERE ss.started_at >= ? AND ss.started_at <= ?
-    ORDER BY ss.started_at DESC
+    SELECT *
+    FROM study_sessions
+    WHERE started_at >= ? AND started_at <= ?
+    ORDER BY started_at DESC
   `).all(startDate, endDate) as StudySession[]
 }
 
