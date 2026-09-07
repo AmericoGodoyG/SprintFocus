@@ -94,7 +94,55 @@ export function initBrowserApiFallback(): void {
       }))
     },
     getStudyStreak: async (): Promise<{ current: number; best: number }> => {
-      return { current: 1, best: 3 }
+      const sessions = getItem<any[]>('sprintfocus_sessions', [])
+      const completedDays = Array.from(
+        new Set(
+          sessions
+            .filter(s => (s.status === 'completed' || Number(s.actual_minutes) > 0) && s.started_at)
+            .map(s => {
+              const d = new Date(s.started_at)
+              const y = d.getFullYear()
+              const m = String(d.getMonth() + 1).padStart(2, '0')
+              const day = String(d.getDate()).padStart(2, '0')
+              return `${y}-${m}-${day}`
+            })
+        )
+      ).sort().reverse()
+
+      if (completedDays.length === 0) return { current: 0, best: 0 }
+
+      const today = new Date()
+      const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+      const yesterdayDate = new Date(Date.now() - 86400000)
+      const yesterdayKey = `${yesterdayDate.getFullYear()}-${String(yesterdayDate.getMonth() + 1).padStart(2, '0')}-${String(yesterdayDate.getDate()).padStart(2, '0')}`
+
+      let current = 0
+      let best = 0
+      let streak = 1
+
+      if (completedDays[0] === todayKey || completedDays[0] === yesterdayKey) {
+        current = 1
+      }
+
+      for (let i = 1; i < completedDays.length; i++) {
+        const prev = new Date(completedDays[i - 1] + 'T00:00:00')
+        const curr = new Date(completedDays[i] + 'T00:00:00')
+        const diffDays = Math.round((prev.getTime() - curr.getTime()) / 86400000)
+        if (diffDays === 1) {
+          streak++
+          if (i <= current || current > 0) current = streak
+        } else {
+          best = Math.max(best, streak)
+          streak = 1
+          if (current > 0 && i > current) break
+        }
+      }
+      best = Math.max(best, streak, current)
+      return { current, best }
+    },
+    clearAllSessions: async (): Promise<boolean> => {
+      setItem('sprintfocus_sessions', [])
+      return true
     },
 
     // === Settings ===

@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, BarChart3, Timer, CalendarDays, LucideIcon, Sun, Moon } from 'lucide-react'
+import { ChevronLeft, ChevronRight, BarChart3, Timer, CalendarDays, LucideIcon, Sun, Moon, RotateCcw } from 'lucide-react'
 import { useTheme } from '../../hooks/useTheme'
 import Metrics from '../../pages/Metrics'
 import Pomodoro from '../../pages/Pomodoro'
 import Calendar from '../../pages/Calendar'
 import WindowControls from './WindowControls'
+import SettingsModal from './SettingsModal'
 import styles from './StudyFlowSlider.module.css'
 
 interface FlowStep {
@@ -32,6 +33,7 @@ export default function StudyFlowSlider() {
   const navigate = useNavigate()
   const { theme, toggleTheme } = useTheme()
   const [activeIndex, setActiveIndex] = useState(() => getIndexFromPath(location.pathname))
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const wheelLockRef = useRef(false)
   const touchStartXRef = useRef<number | null>(null)
 
@@ -200,18 +202,30 @@ export default function StudyFlowSlider() {
           })}
         </nav>
 
-        <button
-          type="button"
-          onClick={toggleTheme}
-          className={styles.themeToggleBtn}
-          title={theme === 'dark' ? 'Mudar para Tema Claro' : 'Mudar para Tema Escuro'}
-          aria-label="Alternar tema"
-          data-testid="theme-toggle-btn"
-        >
-          {theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
-        </button>
+        {/* Right side controls: Theme button, Settings gear, and Window Controls Overlay with identical spacing */}
+        <div className={styles.topRightControls}>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className={styles.themeToggleBtn}
+            title={theme === 'dark' ? 'Mudar para Tema Claro' : 'Mudar para Tema Escuro'}
+            aria-label="Alternar tema"
+            data-testid="theme-toggle-btn"
+          >
+            {theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
+          </button>
 
-        <div className={styles.windowControlsWrapper}>
+          <button
+            type="button"
+            onClick={() => setIsSettingsOpen(true)}
+            className={styles.settingsToggleBtn}
+            title="Redefinir / Configurações"
+            aria-label="Redefinir / Configurações"
+            data-testid="settings-toggle-btn"
+          >
+            <RotateCcw size={16} />
+          </button>
+
           <WindowControls />
         </div>
       </header>
@@ -291,6 +305,12 @@ export default function StudyFlowSlider() {
           </div>
         </div>
       </div>
+
+      {/* Settings Modal Dialog */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
     </div>
   )
 }

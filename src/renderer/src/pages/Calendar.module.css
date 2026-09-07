@@ -337,6 +337,13 @@
   align-items: flex-start;
 }
 
+.todoTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
 .todoTitle {
   font-size: 22px;
   font-weight: 800;
@@ -344,6 +351,19 @@
   letter-spacing: -0.02em;
   margin: 0;
   line-height: 1.2;
+}
+
+.readOnlyBadge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-tertiary);
+  white-space: nowrap;
 }
 
 .todoSubtitle {
@@ -373,6 +393,22 @@
   max-height: 310px;
 }
 
+.todoEmpty {
+  padding: var(--space-8) var(--space-2);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.todoEmptyText {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  line-height: 1.5;
+  font-style: italic;
+  margin: 0;
+}
+
 .todoList::-webkit-scrollbar {
   width: 4px;
 }
@@ -392,6 +428,10 @@
   border-radius: var(--radius-lg);
   border: 1px solid transparent;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.todoItemReadOnly {
+  cursor: default;
 }
 
 .todoItem:hover {
@@ -423,6 +463,18 @@
   background: rgba(124, 77, 255, 0.18);
   box-shadow: 0 0 10px rgba(102, 65, 255, 0.35);
   transform: scale(1.05);
+}
+
+.todoCheckboxDisabled {
+  cursor: not-allowed !important;
+  opacity: 0.5;
+}
+
+.todoCheckboxDisabled:hover {
+  border-color: var(--glass-border) !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+  box-shadow: var(--glass-bevel) !important;
+  transform: none !important;
 }
 
 .todoCheckboxChecked {

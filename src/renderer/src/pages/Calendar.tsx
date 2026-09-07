@@ -25,13 +25,15 @@ interface StudySession {
   subject_color?: string
   topic_id: number | null
   topic_name?: string
-  duration_minutes: number
-  actual_duration_minutes: number
-  type: string
-  status: string
+  planned_minutes?: number
+  actual_minutes?: number
+  duration_minutes?: number
+  actual_duration_minutes?: number
+  type?: string
+  status?: string
   started_at: string
-  finished_at: string | null
-  notes: string | null
+  finished_at?: string | null
+  notes?: string | null
 }
 
 const MONTH_NAMES = [
@@ -40,6 +42,23 @@ const MONTH_NAMES = [
 ]
 
 const WEEK_DAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
+
+function getLocalDateKey(d: Date): string {
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function parseSessionDayKey(startedAt: string): string {
+  try {
+    const d = new Date(startedAt)
+    if (!isNaN(d.getTime())) {
+      return getLocalDateKey(d)
+    }
+  } catch {}
+  return startedAt.split('T')[0] || startedAt.substring(0, 10)
+}
 
 function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -50,6 +69,23 @@ function Calendar() {
     longestStreak: 0
   })
   const [loading, setLoading] = useState(true)
+
+  // One-time cleanup of legacy mock tasks previously saved in localStorage
+  useEffect(() => {
+    try {
+      const keysToRemove: string[] = []
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i)
+        if (k && k.startsWith('sprintfocus_todos_')) {
+          const val = localStorage.getItem(k)
+          if (val && (val.includes('Search for inspirations') || val.includes('ChecK Email'))) {
+            keysToRemove.push(k)
+          }
+        }
+      }
+      keysToRemove.forEach(k => localStorage.removeItem(k))
+    } catch {}
+  }, [])
 
   // Fetch sessions for the displayed month
   useEffect(() => {
@@ -82,8 +118,8 @@ function Calendar() {
       const month = currentDate.getMonth()
 
       // Calculate start and end including previous and next month buffer
-      const start = new Date(year, month - 1, 20).toISOString().split('T')[0]
-      const end = new Date(year, month + 1, 10).toISOString().split('T')[0]
+      const start = getLocalDateKey(new Date(year, month - 1, 15))
+      const end = `${getLocalDateKey(new Date(year, month + 1, 15))}T23:59:59.999Z`
 
       const data = await window.api.getSessionsByDateRange(start, end) as StudySession[]
       setSessions(data || [])
@@ -94,12 +130,12 @@ function Calendar() {
     }
   }
 
-  // Group sessions by day string (YYYY-MM-DD)
+  // Group sessions by day string (YYYY-MM-DD) using local date
   const sessionsByDay = useMemo(() => {
     const map = new Map<string, StudySession[]>()
     sessions.forEach(session => {
       if (!session.started_at) return
-      const dayKey = session.started_at.split('T')[0] || session.started_at.substring(0, 10)
+      const dayKey = parseSessionDayKey(session.started_at)
       if (!map.has(dayKey)) {
         map.set(dayKey, [])
       }
@@ -117,6 +153,10 @@ function Calendar() {
     const totalDaysInMonth = new Date(year, month + 1, 0).getDate()
     const prevMonthDays = new Date(year, month, 0).getDate()
 
+    const getSessionMinutes = (s: StudySession): number => {
+      return Number(s.actual_minutes ?? s.actual_duration_minutes ?? s.planned_minutes ?? s.duration_minutes ?? 0)
+    }
+
     const days: {
       date: Date
       dayNumber: number
@@ -128,16 +168,16 @@ function Calendar() {
       totalMinutes: number
     }[] = []
 
-    const todayStr = new Date().toISOString().split('T')[0]
-    const selectedStr = selectedDate.toISOString().split('T')[0]
+    const todayStr = getLocalDateKey(new Date())
+    const selectedStr = getLocalDateKey(selectedDate)
 
     // Previous month padding
     for (let i = firstDayIndex - 1; i >= 0; i--) {
       const dayNum = prevMonthDays - i
       const d = new Date(year, month - 1, dayNum)
-      const key = d.toISOString().split('T')[0]
+      const key = getLocalDateKey(d)
       const daySessions = sessionsByDay.get(key) || []
-      const totalMinutes = daySessions.reduce((acc, s) => acc + ((s as any).actual_minutes || (s as any).actual_duration_minutes || (s as any).duration_minutes || 0), 0)
+      const totalMinutes = daySessions.reduce((acc, s) => acc + getSessionMinutes(s), 0)
 
       days.push({
         date: d,
@@ -154,9 +194,9 @@ function Calendar() {
     // Current month days
     for (let i = 1; i <= totalDaysInMonth; i++) {
       const d = new Date(year, month, i)
-      const key = d.toISOString().split('T')[0]
+      const key = getLocalDateKey(d)
       const daySessions = sessionsByDay.get(key) || []
-      const totalMinutes = daySessions.reduce((acc, s) => acc + (s.actual_duration_minutes || s.duration_minutes || 0), 0)
+      const totalMinutes = daySessions.reduce((acc, s) => acc + getSessionMinutes(s), 0)
 
       days.push({
         date: d,
@@ -174,9 +214,9 @@ function Calendar() {
     const remaining = (7 - (days.length % 7)) % 7
     for (let i = 1; i <= remaining; i++) {
       const d = new Date(year, month + 1, i)
-      const key = d.toISOString().split('T')[0]
+      const key = getLocalDateKey(d)
       const daySessions = sessionsByDay.get(key) || []
-      const totalMinutes = daySessions.reduce((acc, s) => acc + (s.actual_duration_minutes || s.duration_minutes || 0), 0)
+      const totalMinutes = daySessions.reduce((acc, s) => acc + getSessionMinutes(s), 0)
 
       days.push({
         date: d,
@@ -193,7 +233,8 @@ function Calendar() {
     return days
   }, [currentDate, sessionsByDay, selectedDate])
 
-  const selectedKey = selectedDate.toISOString().split('T')[0]
+  const selectedKey = getLocalDateKey(selectedDate)
+  const isSelectedToday = selectedKey === getLocalDateKey(new Date())
 
   const [todos, setTodos] = useState<TodoItem[]>([])
   const [newTodoText, setNewTodoText] = useState('')
@@ -203,23 +244,25 @@ function Calendar() {
     const saved = localStorage.getItem(storageKey)
     if (saved) {
       try {
-        setTodos(JSON.parse(saved))
-        return
+        const parsed = JSON.parse(saved)
+        const isLegacyMock = Array.isArray(parsed) && parsed.some(
+          (t: any) => t.text === 'Search for inspirations' || t.text === 'ChecK Email'
+        )
+        if (!isLegacyMock && Array.isArray(parsed)) {
+          setTodos(parsed)
+          return
+        }
       } catch { }
     }
-    // Default initial tasks matching Behance style
-    const initialTasks: TodoItem[] = [
-      { id: '1', text: 'ChecK Email', completed: false },
-      { id: '2', text: 'Search for inspirations', completed: true },
-      { id: '3', text: 'Design the task', completed: false },
-      { id: '4', text: 'Post it on Social Media', completed: false },
-      { id: '5', text: 'Get reviews and Update it', completed: false }
-    ]
-    setTodos(initialTasks)
-    localStorage.setItem(storageKey, JSON.stringify(initialTasks))
+    // Days start empty without fake tasks or progress
+    setTodos([])
+    if (saved) {
+      localStorage.removeItem(storageKey)
+    }
   }, [selectedKey])
 
   function handleToggleTodo(id: string) {
+    if (!isSelectedToday) return
     const updated = todos.map(t => (t.id === id ? { ...t, completed: !t.completed } : t))
     setTodos(updated)
     localStorage.setItem(`sprintfocus_todos_${selectedKey}`, JSON.stringify(updated))
@@ -408,7 +451,17 @@ function Calendar() {
         <div className={styles.todoCard}>
           <div className={styles.todoHeader}>
             <div>
-              <h3 className={styles.todoTitle}>To Do List</h3>
+              <div className={styles.todoTitleRow}>
+                <h3 className={styles.todoTitle}>To Do List</h3>
+                {!isSelectedToday && (
+                  <span
+                    className={styles.readOnlyBadge}
+                    title="O progresso só pode ser registrado no dia atual"
+                  >
+                    Somente no dia atual
+                  </span>
+                )}
+              </div>
               <p className={styles.todoSubtitle}>
                 {selectedDate.toLocaleDateString('pt-BR', {
                   weekday: 'long',
@@ -422,12 +475,24 @@ function Calendar() {
           <div className={styles.todoDivider} />
 
           <div className={styles.todoList}>
+            {todos.length === 0 && (
+              <div className={styles.todoEmpty}>
+                <p className={styles.todoEmptyText}>
+                  {isSelectedToday
+                    ? 'Nenhuma tarefa para hoje. Adicione uma nota abaixo!'
+                    : 'Nenhuma tarefa registrada para este dia.'}
+                </p>
+              </div>
+            )}
             {todos.map(todo => (
               <div
                 key={todo.id}
-                className={styles.todoItem}
+                className={`
+                  ${styles.todoItem}
+                  ${!isSelectedToday ? styles.todoItemReadOnly : ''}
+                `}
                 onClick={() => {
-                  if (editingId !== todo.id) {
+                  if (editingId !== todo.id && isSelectedToday) {
                     handleToggleTodo(todo.id)
                   }
                 }}
@@ -472,14 +537,31 @@ function Calendar() {
                   <>
                     <button
                       type="button"
+                      disabled={!isSelectedToday}
                       className={`
                         ${styles.todoCheckbox}
                         ${todo.completed ? styles.todoCheckboxChecked : ''}
+                        ${!isSelectedToday ? styles.todoCheckboxDisabled : ''}
                       `}
-                      aria-label={todo.completed ? 'Desmarcar tarefa' : 'Marcar como concluída'}
+                      aria-label={
+                        !isSelectedToday
+                          ? 'O progresso só pode ser registrado no dia atual'
+                          : todo.completed
+                            ? 'Desmarcar tarefa'
+                            : 'Marcar como concluída'
+                      }
+                      title={
+                        !isSelectedToday
+                          ? 'O progresso só pode ser registrado no dia atual'
+                          : todo.completed
+                            ? 'Desmarcar tarefa'
+                            : 'Marcar como concluída'
+                      }
                       onClick={(e) => {
                         e.stopPropagation()
-                        handleToggleTodo(todo.id)
+                        if (isSelectedToday) {
+                          handleToggleTodo(todo.id)
+                        }
                       }}
                     >
                       {todo.completed && (

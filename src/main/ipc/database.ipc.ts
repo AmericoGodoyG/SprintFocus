@@ -11,4 +11,5 @@ export function registerDatabaseIPC(): void {
   ipcMain.handle('db:sessions:getStats', (_, start: string, end: string) => sessionsRepo.getSessionStats(start, end))
   ipcMain.handle('db:sessions:getDailyData', (_, start: string, end: string) => sessionsRepo.getDailyStudyData(start, end))
   ipcMain.handle('db:sessions:getStreak', () => sessionsRepo.getStudyStreak())
+  ipcMain.handle('db:sessions:clearAll', () => sessionsRepo.clearAllSessions())
 }

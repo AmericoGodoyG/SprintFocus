@@ -14,6 +14,7 @@ export interface StudySession {
   notes: string | null
   // Joined fields
   subject_name?: string
+  subject_color?: string
   topic_name?: string
 }
 
@@ -53,7 +54,7 @@ export function finishSession(id: number, finishedAt: string, actualMinutes: num
 export function getSessionById(id: number): StudySession | undefined {
   const db = getDatabase()
   return db.prepare(`
-    SELECT ss.*, s.name as subject_name, t.name as topic_name
+    SELECT ss.*, s.name as subject_name, s.color as subject_color, t.name as topic_name
     FROM study_sessions ss
     LEFT JOIN subjects s ON ss.subject_id = s.id
     LEFT JOIN topics t ON ss.topic_id = t.id
@@ -64,7 +65,7 @@ export function getSessionById(id: number): StudySession | undefined {
 export function getSessionsByDateRange(startDate: string, endDate: string): StudySession[] {
   const db = getDatabase()
   return db.prepare(`
-    SELECT ss.*, s.name as subject_name, t.name as topic_name
+    SELECT ss.*, s.name as subject_name, s.color as subject_color, t.name as topic_name
     FROM study_sessions ss
     LEFT JOIN subjects s ON ss.subject_id = s.id
     LEFT JOIN topics t ON ss.topic_id = t.id
@@ -97,10 +98,17 @@ export function getDailyStudyData(startDate: string, endDate: string) {
   `).all(startDate, endDate)
 }
 
+function getLocalDateString(d: Date): string {
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 export function getStudyStreak(): { current: number; best: number } {
   const db = getDatabase()
   const days = db.prepare(`
-    SELECT DISTINCT DATE(started_at) as date
+    SELECT DISTINCT DATE(started_at, 'localtime') as date
     FROM study_sessions
     WHERE status = 'completed'
     ORDER BY date DESC
@@ -111,8 +119,8 @@ export function getStudyStreak(): { current: number; best: number } {
   let current = 0
   let best = 0
   let streak = 1
-  const today = new Date().toISOString().split('T')[0]
-  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
+  const today = getLocalDateString(new Date())
+  const yesterday = getLocalDateString(new Date(Date.now() - 86400000))
 
   // Check if the latest study day is today or yesterday
   if (days[0].date === today || days[0].date === yesterday) {
@@ -120,9 +128,9 @@ export function getStudyStreak(): { current: number; best: number } {
   }
 
   for (let i = 1; i < days.length; i++) {
-    const prevDate = new Date(days[i - 1].date)
-    const currDate = new Date(days[i].date)
-    const diffDays = (prevDate.getTime() - currDate.getTime()) / 86400000
+    const prevDate = new Date(days[i - 1].date + 'T00:00:00')
+    const currDate = new Date(days[i].date + 'T00:00:00')
+    const diffDays = Math.round((prevDate.getTime() - currDate.getTime()) / 86400000)
 
     if (diffDays === 1) {
       streak++
@@ -139,4 +147,10 @@ export function getStudyStreak(): { current: number; best: number } {
   }
 
   return { current, best: Math.max(best, current) }
+}
+
+export function clearAllSessions(): boolean {
+  const db = getDatabase()
+  db.prepare('DELETE FROM study_sessions').run()
+  return true
 }

@@ -21,15 +21,56 @@
   -webkit-app-region: drag;
   gap: var(--space-3);
 }
-.windowControlsWrapper {
+.topRightControls {
   position: absolute;
   right: 24px;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   align-items: center;
+  gap: 10px;
   z-index: 40;
   -webkit-app-region: no-drag;
+}
+
+.windowControlsWrapper {
+  display: flex;
+  align-items: center;
+}
+
+.settingsToggleBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: var(--glass-surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-bevel), var(--shadow-sm);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  -webkit-app-region: no-drag;
+}
+
+.settingsToggleBtn:hover {
+  background: var(--glass-surface-hover);
+  color: var(--primary-400);
+  border-color: var(--glass-border-light);
+  box-shadow: var(--glass-bevel-intense), var(--shadow-md), 0 0 14px rgba(102, 65, 255, 0.35);
+  transform: scale(1.1) rotate(-90deg);
+}
+
+:global([data-theme="light"]) .settingsToggleBtn:hover {
+  color: #6366f1;
+  box-shadow: var(--glass-bevel-intense), var(--shadow-md), 0 0 14px rgba(99, 102, 241, 0.25);
+}
+
+.settingsToggleBtn:active {
+  transform: scale(0.95) rotate(-90deg);
 }
 
 .themeToggleBtn {

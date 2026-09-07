@@ -9,6 +9,7 @@ const api = {
   getSessionStats: (start: string, end: string) => ipcRenderer.invoke('db:sessions:getStats', start, end),
   getDailyStudyData: (start: string, end: string) => ipcRenderer.invoke('db:sessions:getDailyData', start, end),
   getStudyStreak: () => ipcRenderer.invoke('db:sessions:getStreak'),
+  clearAllSessions: () => ipcRenderer.invoke('db:sessions:clearAll'),
 
   // === Settings ===
   getSettings: () => ipcRenderer.invoke('settings:getAll'),
