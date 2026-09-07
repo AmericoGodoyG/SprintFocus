@@ -21,7 +21,16 @@
   -webkit-app-region: drag;
   gap: var(--space-3);
 }
-
+.windowControlsWrapper {
+  position: absolute;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  z-index: 40;
+  -webkit-app-region: no-drag;
+}
 
 .themeToggleBtn {
   width: 36px;

@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { useTheme } from './hooks/useTheme'
 import MainLayout from './components/layout/MainLayout'
 import StudyFlowSlider from './components/layout/StudyFlowSlider'
@@ -14,7 +14,7 @@ function App() {
   return (
     <Routes>
       <Route element={<MainLayout />}>
-        <Route path="/" element={<StudyFlowSlider />} />
+        <Route path="/" element={<Navigate to="/pomodoro" replace />} />
         <Route path="/pomodoro" element={<StudyFlowSlider />} />
         <Route path="/metrics" element={<StudyFlowSlider />} />
         <Route path="/calendar" element={<StudyFlowSlider />} />

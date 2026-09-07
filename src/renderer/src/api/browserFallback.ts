@@ -118,6 +118,22 @@ export function initBrowserApiFallback(): void {
       } else {
         console.log(`[Notificação] ${title}: ${body}`)
       }
+    },
+
+    // === Window Controls (Browser Fallback) ===
+    minimizeWindow: async (): Promise<void> => {
+      console.log('[Window] minimizeWindow chamado no navegador')
+    },
+    maximizeWindow: async (): Promise<boolean> => {
+      console.log('[Window] maximizeWindow chamado no navegador')
+      return false
+    },
+    closeWindow: async (): Promise<void> => {
+      console.log('[Window] closeWindow chamado no navegador')
+    },
+    isWindowMaximized: async (): Promise<boolean> => false,
+    onMaximizedChange: (_callback: (isMaximized: boolean) => void) => {
+      return () => {}
     }
   }
 

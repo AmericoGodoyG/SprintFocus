@@ -1,0 +1,83 @@
+/* Liquid Glass Window Controls Container */
+.windowControlsContainer {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--glass-surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-bevel), var(--shadow-sm);
+  border-radius: var(--radius-full);
+  padding: 3px 5px;
+  -webkit-app-region: no-drag;
+  flex-shrink: 0;
+  transition: all var(--transition-base);
+}
+
+.windowControlsContainer:hover {
+  border-color: var(--glass-border-light);
+  box-shadow: var(--glass-bevel-intense), var(--shadow-md);
+}
+
+/* Individual Control Button */
+.controlBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  user-select: none;
+  -webkit-app-region: no-drag;
+}
+
+.controlBtn:hover {
+  background: var(--glass-surface-hover);
+  color: var(--primary-400);
+  border-color: var(--glass-border-light);
+  box-shadow: var(--glass-bevel-intense), 0 0 12px rgba(136, 104, 255, 0.28);
+  transform: scale(1.08);
+}
+
+.controlBtn:active {
+  transform: scale(0.92);
+}
+
+/* Close Button — Danger Liquid Glow */
+.closeBtn {
+  color: var(--text-secondary);
+}
+
+.closeBtn:hover {
+  background: rgba(239, 68, 68, 0.18);
+  color: var(--danger-400);
+  border-color: rgba(239, 68, 68, 0.35);
+  box-shadow: var(--glass-bevel-intense), 0 0 14px rgba(239, 68, 68, 0.35);
+  transform: scale(1.08);
+}
+
+.closeBtn:active {
+  background: rgba(239, 68, 68, 0.28);
+  transform: scale(0.92);
+}
+
+/* === Light Mode Overrides === */
+:global([data-theme="light"]) .controlBtn:hover {
+  color: var(--primary-500);
+  background: rgba(102, 65, 255, 0.12);
+  border-color: rgba(102, 65, 255, 0.25);
+  box-shadow: var(--glass-bevel-intense), 0 0 10px rgba(102, 65, 255, 0.2);
+}
+
+:global([data-theme="light"]) .closeBtn:hover {
+  color: var(--danger-500);
+  background: rgba(220, 38, 38, 0.12);
+  border-color: rgba(220, 38, 38, 0.3);
+  box-shadow: var(--glass-bevel-intense), 0 0 12px rgba(220, 38, 38, 0.25);
+}

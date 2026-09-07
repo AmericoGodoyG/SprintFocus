@@ -2,7 +2,7 @@ const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
-process.env['ELECTRON_RENDERER_URL'] = process.env['ELECTRON_RENDERER_URL'] || 'http://localhost:5173';
+delete process.env['ELECTRON_RENDERER_URL'];
 
 // Require the compiled main bundle to initialize database and register all IPC handlers
 require('../out/main/index.js');
@@ -105,8 +105,8 @@ app.whenReady().then(async () => {
     console.log('\n--- SUITE 1: TESTE DE ROTAS E NAVEGAÇÃO ---');
 
     const routesToTest = [
-      { name: 'Métricas', hash: '#/', checkText: 'Métricas' },
       { name: 'Pomodoro', hash: '#/pomodoro', checkText: 'Pomodoro' },
+      { name: 'Métricas', hash: '#/metrics', checkText: 'Métricas' },
       { name: 'Calendário', hash: '#/calendar', checkText: 'Calendário' }
     ];
 
@@ -117,6 +117,12 @@ app.whenReady().then(async () => {
       const passed = bodyText.includes(route.checkText);
       recordTest('Rotas', `Navegação para ${route.name} (${route.hash})`, passed);
     }
+
+    // Teste de inicialização / redirecionamento da raiz (#/) para o Pomodoro (#/pomodoro)
+    await exec(`window.location.hash = '#/'`);
+    await sleep(500);
+    const hashAfterRoot = await exec(`window.location.hash`);
+    recordTest('Rotas', 'Inicialização/Acesso à raiz (#/) inicia na tela de Pomodoro (#/pomodoro)', hashAfterRoot === '#/pomodoro', `Hash atual: ${hashAfterRoot}`);
 
     // Verify Sidebar is completely removed
     const hasSidebar = await exec(`Boolean(document.querySelector('aside'))`);
@@ -132,6 +138,22 @@ app.whenReady().then(async () => {
       return Boolean(toggle && isRight);
     })()`);
     recordTest('Layout', 'Opção de alterar tema posicionada ao lado direito do menu superior', themeToggleInTopBar);
+
+    // Verify Custom Window Controls (Liquid Glass)
+    const windowControlsInfo = await exec(`(() => {
+      const minBtn = document.querySelector('button[data-testid="window-minimize-btn"]');
+      const maxBtn = document.querySelector('button[data-testid="window-maximize-btn"]');
+      const closeBtn = document.querySelector('button[data-testid="window-close-btn"]');
+      const container = minBtn ? minBtn.closest('div[class*="windowControlsContainer"]') : null;
+      return {
+        hasMin: Boolean(minBtn),
+        hasMax: Boolean(maxBtn),
+        hasClose: Boolean(closeBtn),
+        hasContainer: Boolean(container)
+      };
+    })()`);
+    recordTest('Controles da Janela', 'Botões de Minimizar, Maximizar e Fechar presentes no Menu Superior', Boolean(windowControlsInfo.hasMin && windowControlsInfo.hasMax && windowControlsInfo.hasClose));
+    recordTest('Controles da Janela', 'Cápsula em Liquid Glass contendo os controles da janela', Boolean(windowControlsInfo.hasContainer));
 
     // -------------------------------------------------------------
     // SUITE 2: TESTE E2E DE BOTÕES E INTERATIVIDADE
@@ -160,7 +182,7 @@ app.whenReady().then(async () => {
     // SUITE: MÉTRICAS DE EVOLUÇÃO (MONTANHA)
     // =============================================================
     console.log('\n--- SUITE DE TESTES: MÉTRICAS DE EVOLUÇÃO (MONTANHA) ---');
-    await exec(`window.location.hash = '#/'`);
+    await exec(`window.location.hash = '#/metrics'`);
     await sleep(600);
 
     // 1. Title and Subtitle
@@ -246,7 +268,7 @@ app.whenReady().then(async () => {
       const onPomodoroRoute = await exec(`window.location.hash.includes('pomodoro')`);
       recordTest('Dashboard Montanha', 'Navegação direta para Pomodoro ao clicar no atalho', onPomodoroRoute);
       // Return to Dashboard for remaining tests
-      await exec(`window.location.hash = '#/'`);
+      await exec(`window.location.hash = '#/metrics'`);
       await sleep(500);
     }
 
@@ -526,7 +548,7 @@ app.whenReady().then(async () => {
     console.log('\n--- SUITE 6: SLIDER LATERAL, SETAS, CRONÔMETRO UNIFICADO E GRÁFICO ---');
 
     // 6.1 Gráfico da Montanha sem fundo de liquid glass
-    await exec(`window.location.hash = '#/'`);
+    await exec(`window.location.hash = '#/metrics'`);
     await sleep(600);
     const chartCardStyles = await exec(`(() => {
       const card = document.querySelector('div[class*="chartCard"]');
@@ -565,7 +587,7 @@ app.whenReady().then(async () => {
 
     // 6.3 Navegação por Setas Laterais
     // Voltar para Métricas (slide 0)
-    await exec(`window.location.hash = '#/'`);
+    await exec(`window.location.hash = '#/metrics'`);
     await sleep(600);
 
     const slide0Arrows = await exec(`(() => {
@@ -632,7 +654,7 @@ app.whenReady().then(async () => {
     })()`);
     await sleep(600);
     const hashFromPillMetrics = await exec(`window.location.hash`);
-    recordTest('Scroll & Pills Superiores', 'Clique no pill "Métricas" navega para slide de Métricas (#/)', hashFromPillMetrics === '#/' || hashFromPillMetrics === '', `Hash: ${hashFromPillMetrics}`);
+    recordTest('Scroll & Pills Superiores', 'Clique no pill "Métricas" navega para slide de Métricas (#/metrics)', hashFromPillMetrics === '#/metrics', `Hash: ${hashFromPillMetrics}`);
 
     await exec(`(() => {
       const pillCal = document.querySelector('button[data-testid="flow-pill-calendar"]');

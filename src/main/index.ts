@@ -28,12 +28,6 @@ function createWindow(): BrowserWindow {
     show: false,
     frame: false,
     icon: icon,
-    titleBarStyle: 'hidden',
-    titleBarOverlay: {
-      color: 'transparent',
-      symbolColor: '#9ca3af',
-      height: 40
-    },
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
@@ -55,9 +49,10 @@ function createWindow(): BrowserWindow {
   })
 
   if (isDev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+    const baseUrl = process.env['ELECTRON_RENDERER_URL'].replace(/\/$/, '')
+    mainWindow.loadURL(`${baseUrl}/#/pomodoro`)
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    mainWindow.loadFile(join(__dirname, '../renderer/index.html'), { hash: '/pomodoro' })
   }
 
   return mainWindow
@@ -69,13 +64,16 @@ app.whenReady().then(() => {
   // Initialize database
   initDatabase()
 
-  // Register IPC handlers
-  registerAllIPC()
+  const mainWindow = createWindow()
 
-  createWindow()
+  // Register IPC handlers
+  registerAllIPC(mainWindow)
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    if (BrowserWindow.getAllWindows().length === 0) {
+      const win = createWindow()
+      registerAllIPC(win)
+    }
   })
 })
 

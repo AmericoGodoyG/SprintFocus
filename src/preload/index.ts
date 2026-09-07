@@ -16,7 +16,20 @@ const api = {
   setSetting: (key: string, value: string) => ipcRenderer.invoke('settings:set', key, value),
 
   // === Notifications ===
-  showNotification: (title: string, body: string) => ipcRenderer.invoke('notification:show', title, body)
+  showNotification: (title: string, body: string) => ipcRenderer.invoke('notification:show', title, body),
+
+  // === Window Controls ===
+  minimizeWindow: () => ipcRenderer.invoke('window:minimize'),
+  maximizeWindow: () => ipcRenderer.invoke('window:maximize'),
+  closeWindow: () => ipcRenderer.invoke('window:close'),
+  isWindowMaximized: () => ipcRenderer.invoke('window:isMaximized') as Promise<boolean>,
+  onMaximizedChange: (callback: (isMaximized: boolean) => void) => {
+    const handler = (_event: unknown, isMaximized: boolean) => callback(isMaximized)
+    ipcRenderer.on('window:maximized-change', handler)
+    return () => {
+      ipcRenderer.removeListener('window:maximized-change', handler)
+    }
+  }
 }
 
 contextBridge.exposeInMainWorld('api', api)

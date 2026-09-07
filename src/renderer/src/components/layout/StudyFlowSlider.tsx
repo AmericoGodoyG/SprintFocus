@@ -5,6 +5,7 @@ import { useTheme } from '../../hooks/useTheme'
 import Metrics from '../../pages/Metrics'
 import Pomodoro from '../../pages/Pomodoro'
 import Calendar from '../../pages/Calendar'
+import WindowControls from './WindowControls'
 import styles from './StudyFlowSlider.module.css'
 
 interface FlowStep {
@@ -15,15 +16,15 @@ interface FlowStep {
 }
 
 const FLOW_STEPS: FlowStep[] = [
-  { id: 'metrics', title: 'Métricas', path: '/', icon: BarChart3 },
+  { id: 'metrics', title: 'Métricas', path: '/metrics', icon: BarChart3 },
   { id: 'pomodoro', title: 'Pomodoro', path: '/pomodoro', icon: Timer },
   { id: 'calendar', title: 'Calendário', path: '/calendar', icon: CalendarDays }
 ]
 
 function getIndexFromPath(pathname: string): number {
-  if (pathname === '/pomodoro') return 1
+  if (pathname === '/metrics') return 0
   if (pathname === '/calendar') return 2
-  return 0 // default to metrics ('/' or '/metrics')
+  return 1 // default to Pomodoro ('/pomodoro', '/', or initial load)
 }
 
 export default function StudyFlowSlider() {
@@ -209,6 +210,10 @@ export default function StudyFlowSlider() {
         >
           {theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
         </button>
+
+        <div className={styles.windowControlsWrapper}>
+          <WindowControls />
+        </div>
       </header>
 
       {/* Floating Left Side Arrow */}
