@@ -46,6 +46,37 @@ const SESSION_COLORS: Record<SessionType, string> = {
   long_break: '#8868ff'
 }
 
+// Background worker ticker to guarantee ticking even if main UI thread is throttled
+function createTimerWorker(): Worker | null {
+  if (typeof window === 'undefined' || typeof Worker === 'undefined' || typeof Blob === 'undefined') {
+    return null
+  }
+  try {
+    const workerScript = `
+      let timerId = null;
+      self.onmessage = function(e) {
+        if (e.data === 'start') {
+          if (timerId) clearInterval(timerId);
+          timerId = setInterval(function() {
+            self.postMessage('tick');
+          }, 250);
+        } else if (e.data === 'stop') {
+          if (timerId) {
+            clearInterval(timerId);
+            timerId = null;
+          }
+        }
+      };
+    `
+    const blob = new Blob([workerScript], { type: 'application/javascript' })
+    const url = URL.createObjectURL(blob)
+    return new Worker(url)
+  } catch (err) {
+    console.warn('Web Worker ticker not available, using interval fallback:', err)
+    return null
+  }
+}
+
 function Pomodoro() {
   const [settings, setSettings] = useState<PomodoroSettings>(defaultSettings)
   const [sessionType, setSessionType] = useState<SessionType>('study')
@@ -72,7 +103,20 @@ function Pomodoro() {
   }, [isEditingTime])
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const workerRef = useRef<Worker | null>(null)
+  const targetEndTimeRef = useRef<number | null>(null)
+  const isCompletingRef = useRef<boolean>(false)
+  const timeLeftRef = useRef<number>(timeLeft)
+  const isRunningRef = useRef<boolean>(isRunning)
   const audioContextRef = useRef<AudioContext | null>(null)
+
+  useEffect(() => {
+    timeLeftRef.current = timeLeft
+  }, [timeLeft])
+
+  useEffect(() => {
+    isRunningRef.current = isRunning
+  }, [isRunning])
 
   // Load settings on mount
   useEffect(() => {
@@ -121,7 +165,11 @@ function Pomodoro() {
       handleUpdateShortBreak(parsed)
     }
 
-    setTimeLeft(parsed * 60)
+    const newSec = parsed * 60
+    setTimeLeft(newSec)
+    if (isRunning) {
+      targetEndTimeRef.current = Date.now() + newSec * 1000
+    }
     setIsEditingTime(false)
   }
 
@@ -195,6 +243,19 @@ function Pomodoro() {
 
   // Handle session completion
   const handleSessionComplete = useCallback(async () => {
+    if (isCompletingRef.current) return
+    isCompletingRef.current = true
+
+    targetEndTimeRef.current = null
+    setIsRunning(false)
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current)
+      intervalRef.current = null
+    }
+    if (workerRef.current) {
+      workerRef.current.postMessage('stop')
+    }
+
     playSound()
 
     // Show notification
@@ -235,34 +296,113 @@ function Pomodoro() {
     setSessionType(nextType)
     setCurrentCycle(nextCycle)
     setTimeLeft(getTotalSeconds(nextType))
-    setIsRunning(false)
+    isCompletingRef.current = false
   }, [sessionType, currentCycle, settings, playSound, sessionId, startedAt])
 
-  // Timer effect
+  // Synchronize timer with real-world wall clock timestamp
+  const syncTimer = useCallback(() => {
+    if (!isRunningRef.current || !targetEndTimeRef.current || isCompletingRef.current) return
+
+    const now = Date.now()
+    const diffMs = targetEndTimeRef.current - now
+    const remainingSeconds = Math.max(0, Math.ceil(diffMs / 1000))
+
+    setTimeLeft(remainingSeconds)
+
+    if (diffMs <= 0) {
+      handleSessionComplete()
+    }
+  }, [handleSessionComplete])
+
+  // Initialize and manage dedicated Web Worker background ticker
   useEffect(() => {
-    if (isRunning) {
-      intervalRef.current = setInterval(() => {
-        setTimeLeft(prev => {
-          if (prev <= 1) {
-            clearInterval(intervalRef.current!)
-            handleSessionComplete()
-            return 0
-          }
-          return prev - 1
-        })
-      }, 1000)
+    const worker = createTimerWorker()
+    if (worker) {
+      worker.onmessage = (e) => {
+        if (e.data === 'tick') {
+          syncTimer()
+        }
+      }
+      workerRef.current = worker
     }
 
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current)
+      if (workerRef.current) {
+        workerRef.current.terminate()
+        workerRef.current = null
+      }
     }
-  }, [isRunning, handleSessionComplete])
+  }, [syncTimer])
+
+  // Timer ticker effect: controls both Web Worker and setInterval fallback
+  useEffect(() => {
+    if (isRunning) {
+      if (!targetEndTimeRef.current) {
+        targetEndTimeRef.current = Date.now() + timeLeftRef.current * 1000
+      }
+
+      syncTimer()
+
+      if (workerRef.current) {
+        workerRef.current.postMessage('start')
+      }
+
+      intervalRef.current = setInterval(() => {
+        syncTimer()
+      }, 250)
+    } else {
+      if (workerRef.current) {
+        workerRef.current.postMessage('stop')
+      }
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+      if (workerRef.current) {
+        workerRef.current.postMessage('stop')
+      }
+    }
+  }, [isRunning, syncTimer])
+
+  // Immediately resync timer whenever window becomes visible or receives focus
+  useEffect(() => {
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === 'visible' || !document.hidden) {
+        syncTimer()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus)
+    window.addEventListener('focus', handleVisibilityOrFocus)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityOrFocus)
+      window.removeEventListener('focus', handleVisibilityOrFocus)
+    }
+  }, [syncTimer])
 
   // Start / Pause
   async function toggleTimer() {
     if (isRunning) {
+      // Pause: recalculate exact remaining time and freeze
       setIsRunning(false)
+      if (targetEndTimeRef.current) {
+        const remainingSeconds = Math.max(0, Math.ceil((targetEndTimeRef.current - Date.now()) / 1000))
+        setTimeLeft(remainingSeconds)
+        targetEndTimeRef.current = null
+      }
     } else {
+      // Start or Resume: establish target end timestamp
+      const targetSec = timeLeftRef.current > 0 ? timeLeftRef.current : getTotalSeconds(sessionType)
+      targetEndTimeRef.current = Date.now() + targetSec * 1000
+
       // Create session record when starting study
       if (sessionType === 'study' && !sessionId) {
         const now = new Date()
@@ -288,7 +428,9 @@ function Pomodoro() {
   // Reset
   function resetTimer() {
     setIsRunning(false)
-    setTimeLeft(getTotalSeconds(sessionType))
+    targetEndTimeRef.current = null
+    const defaultSec = getTotalSeconds(sessionType)
+    setTimeLeft(defaultSec)
     if (sessionId) {
       const now = new Date()
       const actualMinutes = Math.round((now.getTime() - (startedAt?.getTime() || now.getTime())) / 60000)
@@ -306,6 +448,7 @@ function Pomodoro() {
   // Skip
   function skipSession() {
     setIsRunning(false)
+    targetEndTimeRef.current = null
     if (sessionId) {
       const now = new Date()
       const actualMinutes = Math.round((now.getTime() - (startedAt?.getTime() || now.getTime())) / 60000)
@@ -320,7 +463,14 @@ function Pomodoro() {
   async function handleFinishTimerConfirm() {
     setShowFinishConfirmModal(false)
     setIsRunning(false)
-    if (intervalRef.current) clearInterval(intervalRef.current)
+    targetEndTimeRef.current = null
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current)
+      intervalRef.current = null
+    }
+    if (workerRef.current) {
+      workerRef.current.postMessage('stop')
+    }
 
     playSound()
 
