@@ -18,7 +18,7 @@
 </p>
 
 ---
-DOWNLOAD: https://github.com/AmericoGodoyG/SprintFocus/releases/tag/v1.0.0
+DOWNLOAD: https://github.com/AmericoGodoyG/SprintFocus/releases
 
 ## 📖 Sobre o Projeto
 
