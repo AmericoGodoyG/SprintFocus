@@ -36,7 +36,7 @@ const defaultSettings: PomodoroSettings = {
 
 const SESSION_LABELS: Record<SessionType, string> = {
   study: 'Foco',
-  short_break: 'Pausa Curta',
+  short_break: 'Pausa',
   long_break: 'Pausa Longa'
 }
 
@@ -159,13 +159,16 @@ function Pomodoro() {
       return
     }
 
+    let clamped = parsed
     if (sessionType === 'study') {
-      handleUpdateStudyMinutes(parsed)
+      clamped = Math.max(1, Math.min(180, parsed))
+      handleUpdateStudyMinutes(clamped)
     } else if (sessionType === 'short_break') {
-      handleUpdateShortBreak(parsed)
+      clamped = Math.max(1, Math.min(30, parsed))
+      handleUpdateShortBreak(clamped)
     }
 
-    const newSec = parsed * 60
+    const newSec = clamped * 60
     setTimeLeft(newSec)
     if (isRunning) {
       targetEndTimeRef.current = Date.now() + newSec * 1000
@@ -174,7 +177,7 @@ function Pomodoro() {
   }
 
   function handleUpdateShortBreak(mins: number) {
-    const val = Math.max(1, Math.min(60, mins))
+    const val = Math.max(1, Math.min(30, mins))
     const updated = { ...settings, shortBreakMinutes: val }
     setSettings(updated)
     if (!isRunning && sessionType === 'short_break') {
@@ -481,8 +484,9 @@ function Pomodoro() {
     const now = new Date()
 
     if (sessionType === 'study') {
-      const elapsedSeconds = Math.max(1, (settings.studyMinutes * 60) - timeLeft)
-      const elapsedMinutes = Math.max(1, Math.round(elapsedSeconds / 60))
+      // Use wall-clock elapsed time from startedAt for accurate recording
+      const elapsedMs = startedAt ? (now.getTime() - startedAt.getTime()) : 0
+      const elapsedMinutes = Math.max(1, Math.round(elapsedMs / 60000))
 
       if (sessionId) {
         await getApi().finishSession(sessionId, now.toISOString(), elapsedMinutes, 'completed')
@@ -843,12 +847,12 @@ function Pomodoro() {
 
           </div>
 
-          {/* 2. Tempo de Pausa Curta */}
+          {/* 2. Tempo de Pausa */}
           <div className={styles.configGroup} data-testid="config-group-short-break">
             <div className={styles.configGroupHeader}>
               <div className={styles.configLabelRow}>
                 <Coffee size={14} className={styles.configIconShortBreak} />
-                <label className={styles.configLabel}>Pausa Curta</label>
+                <label className={styles.configLabel}>Pausa</label>
               </div>
             </div>
 
@@ -857,12 +861,12 @@ function Pomodoro() {
               value={settings.shortBreakMinutes}
               onChange={handleUpdateShortBreak}
               min={1}
-              max={60}
+              max={30}
               step={1}
               disabled={isRunning}
               unit="min"
               testId="ruler-short-break"
-              ariaLabel="Tempo de Pausa Curta"
+              ariaLabel="Tempo de Pausa"
               stepAmount={1}
               valTestId="val-short-break"
               btnMinusTestId="btn-short-break-minus"

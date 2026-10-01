@@ -173,6 +173,9 @@ export default function StudyFlowSlider() {
     >
       {/* Top Menu Bar — Flow Navigation Pills & Theme Toggle */}
       <header className={styles.topBarContainer} aria-label="Menu superior">
+        {/* Invisible spacer to balance right controls — keeps pills truly centered */}
+        <div className={styles.topLeftSpacer} aria-hidden="true" />
+
         <nav className={styles.flowPills} aria-label="Navegação de telas">
           {FLOW_STEPS.map((step, idx) => {
             const Icon = step.icon
